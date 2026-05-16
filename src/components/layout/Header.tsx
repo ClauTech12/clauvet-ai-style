@@ -44,8 +44,7 @@ export function Header() {
               </Link>
               <nav className="hidden md:flex items-center gap-7 ml-6">
                 {nav.map((item, i) => (
-                  // @ts-expect-error optional search
-                  <Link key={i} to={item.to} search={item.search} className="text-sm uppercase tracking-luxury hover:text-gold transition">
+                  <Link key={i} to={item.to} search={item.search as never} className="text-sm uppercase tracking-luxury hover:text-gold transition">
                     {item.label}
                   </Link>
                 ))}
@@ -114,8 +113,7 @@ export function Header() {
               </div>
               <nav className="mt-12 flex flex-col gap-6">
                 {nav.map((item, i) => (
-                  // @ts-expect-error optional search
-                  <Link key={i} to={item.to} search={item.search} onClick={() => setOpen(false)} className="font-display text-3xl">
+                  <Link key={i} to={item.to} search={item.search as never} onClick={() => setOpen(false)} className="font-display text-3xl">
                     {item.label}
                   </Link>
                 ))}
