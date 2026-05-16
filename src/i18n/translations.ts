@@ -271,6 +271,6 @@ export const translations = {
       currency: "EUR",
     },
   },
-} as const;
+};
 
-export type Translation = typeof translations.en;
+export type Translation = (typeof translations)["en"];
