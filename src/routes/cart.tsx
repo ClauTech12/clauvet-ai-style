@@ -1,0 +1,102 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Minus, Plus, X } from "lucide-react";
+import { fetchCart, removeCartItem, updateCartQty } from "@/lib/cart";
+import { useAuth } from "@/hooks/use-auth";
+import { useI18n, formatPrice } from "@/i18n/I18nProvider";
+import { whatsappLink } from "@/lib/whatsapp";
+
+export const Route = createFileRoute("/cart")({
+  head: () => ({ meta: [{ title: "Cart — Clauvèra" }], links: [{ rel: "canonical", href: "/cart" }] }),
+  component: CartPage,
+});
+
+function CartPage() {
+  const { t, locale } = useI18n();
+  const { user, loading } = useAuth();
+  const qc = useQueryClient();
+  const { data: items = [] } = useQuery({
+    queryKey: ["cart", user?.id],
+    queryFn: () => fetchCart(user!.id),
+    enabled: !!user,
+  });
+
+  if (loading) return <div className="container mx-auto px-6 py-20">{t.common.loading}</div>;
+  if (!user) {
+    return (
+      <div className="container mx-auto px-6 py-32 text-center">
+        <h1 className="font-display text-4xl">{t.cart.title}</h1>
+        <p className="mt-4 text-muted-foreground">{t.auth.signInTitle}</p>
+        <Link to="/login" className="mt-6 inline-flex bg-primary text-primary-foreground px-8 h-12 items-center rounded-sm text-xs uppercase tracking-luxury">{t.auth.signIn}</Link>
+      </div>
+    );
+  }
+
+  const subtotal = items.reduce((s, i) => s + Number(i.product?.price ?? 0) * i.quantity, 0);
+
+  const update = async (id: string, qty: number) => { await updateCartQty(id, qty); qc.invalidateQueries({ queryKey: ["cart"] }); };
+  const remove = async (id: string) => { await removeCartItem(id); qc.invalidateQueries({ queryKey: ["cart"] }); };
+
+  const waMsg = locale === "fr"
+    ? `Bonjour Clauvèra, je souhaite finaliser ma commande :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale)}`
+    : `Hi Clauvèra, I'd like to place this order:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale)}`;
+
+  return (
+    <div className="container mx-auto px-4 md:px-6 py-10 md:py-16">
+      <h1 className="font-display text-4xl md:text-6xl">{t.cart.title}</h1>
+
+      {items.length === 0 ? (
+        <div className="py-20 text-center">
+          <p className="text-muted-foreground">{t.cart.empty}</p>
+          <Link to="/shop" className="mt-6 inline-flex bg-primary text-primary-foreground px-8 h-12 items-center rounded-sm text-xs uppercase tracking-luxury">
+            {t.cart.continueShopping}
+          </Link>
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-3 gap-10 mt-10">
+          <div className="lg:col-span-2 divide-y divide-border">
+            {items.map(i => (
+              <div key={i.id} className="flex gap-4 py-6">
+                <Link to="/product/$slug" params={{ slug: i.product.slug }} className="w-24 md:w-32 aspect-[3/4] bg-muted rounded-sm overflow-hidden flex-shrink-0">
+                  <img src={i.product.images[0]} alt="" className="w-full h-full object-cover" />
+                </Link>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-luxury text-muted-foreground">{i.product.brand}</p>
+                      <h3 className="mt-1">{locale === "fr" ? i.product.name_fr : i.product.name_en}</h3>
+                      {(i.size || i.color) && (
+                        <p className="text-xs text-muted-foreground mt-1">{[i.size, i.color].filter(Boolean).join(" · ")}</p>
+                      )}
+                    </div>
+                    <button onClick={() => remove(i.id)} aria-label={t.cart.remove}><X className="w-4 h-4" /></button>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="inline-flex items-center border border-border rounded-sm">
+                      <button onClick={() => update(i.id, i.quantity - 1)} className="w-9 h-9 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
+                      <span className="w-8 text-center text-sm">{i.quantity}</span>
+                      <button onClick={() => update(i.id, i.quantity + 1)} className="w-9 h-9 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
+                    </div>
+                    <span className="font-medium">{formatPrice(Number(i.product.price) * i.quantity, locale, i.product.currency)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <aside className="bg-card border border-border rounded-sm p-6 h-fit lg:sticky lg:top-28">
+            <h2 className="font-display text-2xl">{t.cart.subtotal}</h2>
+            <div className="mt-4 flex justify-between text-lg">
+              <span>{t.cart.subtotal}</span>
+              <span className="font-medium">{formatPrice(subtotal, locale)}</span>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{t.cart.shipping}</p>
+            <a href={whatsappLink(waMsg)} target="_blank" rel="noopener noreferrer" className="mt-6 w-full h-14 bg-gradient-luxury text-gold-foreground rounded-sm text-xs uppercase tracking-luxury flex items-center justify-center">
+              {t.cart.checkout}
+            </a>
+          </aside>
+        </div>
+      )}
+    </div>
+  );
+}
