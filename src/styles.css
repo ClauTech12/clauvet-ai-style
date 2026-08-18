@@ -4,12 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Luxury fashion typography */
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap");
+/* Clauvéra — Altitude identity: elevation-inspired luxury, grounded in Buea */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 @theme inline {
-  --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -35,9 +36,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-gold: var(--gold);
-  --color-gold-foreground: var(--gold-foreground);
-  --color-champagne: var(--champagne);
+  --color-gold: var(--copper);
+  --color-gold-foreground: var(--copper-foreground);
+  --color-champagne: var(--camwood);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -51,99 +52,99 @@
 :root {
   --radius: 0.25rem;
 
-  /* Light: white / soft beige / champagne gold / matte black */
-  --background: oklch(0.99 0.005 80);
-  --foreground: oklch(0.18 0.005 60);
-  --card: oklch(0.985 0.008 80);
-  --card-foreground: oklch(0.18 0.005 60);
-  --popover: oklch(0.99 0.005 80);
-  --popover-foreground: oklch(0.18 0.005 60);
+  /* Light: warm ash paper / charcoal ink / copper / camwood spark */
+  --background: oklch(0.97 0.008 80);
+  --foreground: oklch(0.16 0.01 260);
+  --card: oklch(0.985 0.006 80);
+  --card-foreground: oklch(0.16 0.01 260);
+  --popover: oklch(0.97 0.008 80);
+  --popover-foreground: oklch(0.16 0.01 260);
 
-  --primary: oklch(0.18 0.005 60);
-  --primary-foreground: oklch(0.985 0.008 80);
+  --primary: oklch(0.16 0.01 260);
+  --primary-foreground: oklch(0.97 0.008 80);
 
-  --secondary: oklch(0.95 0.018 80);
-  --secondary-foreground: oklch(0.18 0.005 60);
+  --secondary: oklch(0.92 0.02 75);
+  --secondary-foreground: oklch(0.16 0.01 260);
 
-  --muted: oklch(0.95 0.012 80);
-  --muted-foreground: oklch(0.46 0.012 60);
+  --muted: oklch(0.93 0.015 75);
+  --muted-foreground: oklch(0.44 0.015 60);
 
-  --accent: oklch(0.92 0.04 85);
-  --accent-foreground: oklch(0.18 0.005 60);
+  --accent: oklch(0.88 0.05 55);
+  --accent-foreground: oklch(0.16 0.01 260);
 
-  --destructive: oklch(0.55 0.22 25);
+  --destructive: oklch(0.5 0.19 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.9 0.012 80);
-  --input: oklch(0.92 0.012 80);
-  --ring: oklch(0.72 0.09 85);
+  --border: oklch(0.87 0.015 75);
+  --input: oklch(0.9 0.015 75);
+  --ring: oklch(0.58 0.12 45);
 
-  --gold: oklch(0.78 0.11 85);
-  --gold-foreground: oklch(0.18 0.005 60);
-  --champagne: oklch(0.92 0.05 88);
+  --copper: oklch(0.58 0.12 45);
+  --copper-foreground: oklch(0.99 0.005 80);
+  --camwood: oklch(0.4 0.14 30);
 
-  --gradient-luxury: linear-gradient(135deg, oklch(0.78 0.11 85) 0%, oklch(0.88 0.06 88) 100%);
-  --gradient-hero: linear-gradient(180deg, oklch(0.99 0.005 80) 0%, oklch(0.94 0.02 82) 100%);
-  --shadow-luxury: 0 30px 60px -20px oklch(0.18 0.005 60 / 0.18), 0 8px 20px -8px oklch(0.18 0.005 60 / 0.12);
-  --shadow-gold: 0 10px 30px -10px oklch(0.78 0.11 85 / 0.5);
-  --shadow-soft: 0 4px 16px -4px oklch(0.18 0.005 60 / 0.08);
+  --gradient-luxury: linear-gradient(135deg, oklch(0.58 0.12 45) 0%, oklch(0.4 0.14 30) 100%);
+  --gradient-hero: linear-gradient(180deg, oklch(0.97 0.008 80) 0%, oklch(0.91 0.02 70) 100%);
+  --shadow-luxury: 0 30px 60px -20px oklch(0.16 0.01 260 / 0.18), 0 8px 20px -8px oklch(0.16 0.01 260 / 0.12);
+  --shadow-gold: 0 10px 30px -10px oklch(0.58 0.12 45 / 0.45);
+  --shadow-soft: 0 4px 16px -4px oklch(0.16 0.01 260 / 0.08);
 
-  --sidebar: oklch(0.985 0.008 80);
-  --sidebar-foreground: oklch(0.18 0.005 60);
-  --sidebar-primary: oklch(0.18 0.005 60);
-  --sidebar-primary-foreground: oklch(0.985 0.008 80);
-  --sidebar-accent: oklch(0.95 0.012 80);
-  --sidebar-accent-foreground: oklch(0.18 0.005 60);
-  --sidebar-border: oklch(0.9 0.012 80);
-  --sidebar-ring: oklch(0.72 0.09 85);
+  --sidebar: oklch(0.985 0.006 80);
+  --sidebar-foreground: oklch(0.16 0.01 260);
+  --sidebar-primary: oklch(0.16 0.01 260);
+  --sidebar-primary-foreground: oklch(0.985 0.006 80);
+  --sidebar-accent: oklch(0.93 0.015 75);
+  --sidebar-accent-foreground: oklch(0.16 0.01 260);
+  --sidebar-border: oklch(0.87 0.015 75);
+  --sidebar-ring: oklch(0.58 0.12 45);
 }
 
 .dark {
-  /* Dark: deep black / charcoal / silver / glow */
-  --background: oklch(0.09 0.005 270);
-  --foreground: oklch(0.96 0.008 80);
-  --card: oklch(0.13 0.008 270);
-  --card-foreground: oklch(0.96 0.008 80);
-  --popover: oklch(0.11 0.008 270);
-  --popover-foreground: oklch(0.96 0.008 80);
+  /* Dark: Void night sky / charcoal / copper ember / camwood glow */
+  --background: oklch(0.14 0.015 260);
+  --foreground: oklch(0.95 0.008 80);
+  --card: oklch(0.18 0.018 260);
+  --card-foreground: oklch(0.95 0.008 80);
+  --popover: oklch(0.16 0.018 260);
+  --popover-foreground: oklch(0.95 0.008 80);
 
-  --primary: oklch(0.96 0.008 80);
-  --primary-foreground: oklch(0.09 0.005 270);
+  --primary: oklch(0.95 0.008 80);
+  --primary-foreground: oklch(0.14 0.015 260);
 
-  --secondary: oklch(0.18 0.008 270);
-  --secondary-foreground: oklch(0.96 0.008 80);
+  --secondary: oklch(0.23 0.02 260);
+  --secondary-foreground: oklch(0.95 0.008 80);
 
-  --muted: oklch(0.17 0.008 270);
-  --muted-foreground: oklch(0.66 0.012 80);
+  --muted: oklch(0.22 0.018 260);
+  --muted-foreground: oklch(0.68 0.015 75);
 
-  --accent: oklch(0.22 0.02 80);
-  --accent-foreground: oklch(0.96 0.008 80);
+  --accent: oklch(0.32 0.06 45);
+  --accent-foreground: oklch(0.95 0.008 80);
 
-  --destructive: oklch(0.65 0.22 25);
+  --destructive: oklch(0.62 0.2 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.22 0.008 270);
-  --input: oklch(0.2 0.008 270);
-  --ring: oklch(0.78 0.11 85);
+  --border: oklch(0.28 0.02 260);
+  --input: oklch(0.25 0.02 260);
+  --ring: oklch(0.68 0.13 48);
 
-  --gold: oklch(0.82 0.12 85);
-  --gold-foreground: oklch(0.09 0.005 270);
-  --champagne: oklch(0.78 0.08 88);
+  --copper: oklch(0.68 0.13 48);
+  --copper-foreground: oklch(0.14 0.015 260);
+  --camwood: oklch(0.58 0.16 32);
 
-  --gradient-luxury: linear-gradient(135deg, oklch(0.82 0.12 85) 0%, oklch(0.65 0.09 75) 100%);
-  --gradient-hero: linear-gradient(180deg, oklch(0.09 0.005 270) 0%, oklch(0.15 0.012 270) 100%);
-  --shadow-luxury: 0 30px 60px -20px oklch(0 0 0 / 0.6), 0 0 80px -20px oklch(0.82 0.12 85 / 0.15);
-  --shadow-gold: 0 10px 40px -10px oklch(0.82 0.12 85 / 0.4);
+  --gradient-luxury: linear-gradient(135deg, oklch(0.68 0.13 48) 0%, oklch(0.5 0.15 30) 100%);
+  --gradient-hero: linear-gradient(180deg, oklch(0.11 0.015 260) 0%, oklch(0.19 0.022 258) 100%);
+  --shadow-luxury: 0 30px 60px -20px oklch(0 0 0 / 0.6), 0 0 80px -20px oklch(0.68 0.13 48 / 0.18);
+  --shadow-gold: 0 10px 40px -10px oklch(0.68 0.13 48 / 0.4);
   --shadow-soft: 0 4px 20px -4px oklch(0 0 0 / 0.5);
 
-  --sidebar: oklch(0.11 0.008 270);
-  --sidebar-foreground: oklch(0.96 0.008 80);
-  --sidebar-primary: oklch(0.82 0.12 85);
-  --sidebar-primary-foreground: oklch(0.09 0.005 270);
-  --sidebar-accent: oklch(0.18 0.008 270);
-  --sidebar-accent-foreground: oklch(0.96 0.008 80);
-  --sidebar-border: oklch(0.22 0.008 270);
-  --sidebar-ring: oklch(0.82 0.12 85);
+  --sidebar: oklch(0.16 0.018 260);
+  --sidebar-foreground: oklch(0.95 0.008 80);
+  --sidebar-primary: oklch(0.68 0.13 48);
+  --sidebar-primary-foreground: oklch(0.14 0.015 260);
+  --sidebar-accent: oklch(0.23 0.02 260);
+  --sidebar-accent-foreground: oklch(0.95 0.008 80);
+  --sidebar-border: oklch(0.28 0.02 260);
+  --sidebar-ring: oklch(0.68 0.13 48);
 }
 
 @layer base {
@@ -170,17 +171,46 @@
   }
 
   ::selection {
-    background: var(--gold);
-    color: var(--gold-foreground);
+    background: var(--copper);
+    color: var(--copper-foreground);
   }
 }
 
 @layer utilities {
   .font-display { font-family: var(--font-display); }
   .font-sans { font-family: var(--font-sans); }
+  .font-mono { font-family: var(--font-mono); }
 
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
+
+  /* Altitude signature: a vertical elevation rule with tick marks,
+     evoking Mount Cameroon's contour lines behind Buea. Use as a
+     section landmark — pair with an eyebrow label like "1200m — BUEA". */
+  .altitude-rule {
+    position: relative;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--border) 12%, var(--border) 88%, transparent);
+  }
+  .altitude-rule::before,
+  .altitude-rule::after {
+    content: "";
+    position: absolute;
+    left: -3px;
+    width: 7px;
+    height: 1px;
+    background: var(--copper);
+  }
+  .altitude-rule::before { top: 0; }
+  .altitude-rule::after { bottom: 0; }
+
+  .eyebrow-altitude {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--copper);
+  }
 
   .glass {
     background: color-mix(in oklab, var(--background) 70%, transparent);

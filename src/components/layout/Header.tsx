@@ -59,6 +59,8 @@ export function Header() {
                 <button onClick={() => setLocale("en")} className={locale === "en" ? "text-gold" : "text-muted-foreground hover:text-foreground"}>EN</button>
                 <span className="mx-2 text-muted-foreground">/</span>
                 <button onClick={() => setLocale("fr")} className={locale === "fr" ? "text-gold" : "text-muted-foreground hover:text-foreground"}>FR</button>
+                <span className="mx-2 text-muted-foreground">/</span>
+                <button onClick={() => setLocale("pcm")} className={locale === "pcm" ? "text-gold" : "text-muted-foreground hover:text-foreground"}>PCM</button>
               </div>
               <button onClick={toggle} className="p-2 hover:text-gold transition" aria-label="Toggle theme">
                 {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -122,6 +124,8 @@ export function Header() {
                 <button onClick={() => setLocale("en")} className={locale === "en" ? "text-gold" : ""}>EN</button>
                 <span>/</span>
                 <button onClick={() => setLocale("fr")} className={locale === "fr" ? "text-gold" : ""}>FR</button>
+                <span>/</span>
+                <button onClick={() => setLocale("pcm")} className={locale === "pcm" ? "text-gold" : ""}>PCM</button>
               </div>
             </div>
           </motion.div>

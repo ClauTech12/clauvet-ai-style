@@ -14,7 +14,7 @@ const STORAGE_KEY = "clauvera-locale";
 function getInitialLocale(): Locale {
   if (typeof window === "undefined") return "en";
   const saved = window.localStorage.getItem(STORAGE_KEY) as Locale | null;
-  if (saved === "en" || saved === "fr") return saved;
+  if (saved === "en" || saved === "fr" || saved === "pcm") return saved;
   const nav = window.navigator?.language?.toLowerCase() ?? "";
   return nav.startsWith("fr") ? "fr" : "en";
 }
@@ -48,7 +48,7 @@ export function useI18n() {
   return ctx;
 }
 
-export function formatPrice(amount: number, locale: Locale, currency = "EUR") {
+export function formatPrice(amount: number, locale: Locale, currency = "XAF") {
   try {
     return new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
@@ -56,6 +56,6 @@ export function formatPrice(amount: number, locale: Locale, currency = "EUR") {
       maximumFractionDigits: 0,
     }).format(amount);
   } catch {
-    return `€${amount}`;
+    return `${amount} FCFA`;
   }
 }

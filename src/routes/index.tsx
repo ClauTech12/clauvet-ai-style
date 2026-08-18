@@ -38,12 +38,13 @@ function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/70" />
         </div>
         <div className="relative h-full container mx-auto px-6 flex flex-col justify-end pb-20 md:pb-28 text-white">
-          <motion.span
+          <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-            className="text-xs uppercase tracking-luxury opacity-80"
+            className="flex items-center gap-3"
           >
-            {t.home.heroEyebrow}
-          </motion.span>
+            <span className="altitude-rule h-8" />
+            <span className="eyebrow-altitude">{t.home.heroEyebrow}</span>
+          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.1, ease: [0.16,1,0.3,1] }}
             className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] mt-4 max-w-4xl text-balance"
