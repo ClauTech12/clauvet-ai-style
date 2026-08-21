@@ -1,0 +1,312 @@
+diff --git a/.gitignore b/.gitignore
+index d24df8a..23660d1 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -20,6 +20,11 @@ dist-ssr
+ .wrangler/
+ .dev.vars
+ 
++# Environment variables (Supabase keys, etc.)
++.env
++.env.local
++.env.*.local
++
+ # Editor directories and files
+ .vscode/*
+ !.vscode/extensions.json
+diff --git a/clauvera-pcm-toggle.patch b/clauvera-pcm-toggle.patch
+deleted file mode 100644
+index 3049ba8..0000000
+--- a/clauvera-pcm-toggle.patch
++++ /dev/null
+@@ -1,233 +0,0 @@
+-diff --git a/src/components/layout/Header.tsx b/src/components/layout/Header.tsx
+-index 0864d92..cd97a3a 100644
+---- a/src/components/layout/Header.tsx
+-+++ b/src/components/layout/Header.tsx
+-@@ -59,6 +59,8 @@ export function Header() {
+-                 <button onClick={() => setLocale("en")} className={locale === "en" ? "text-gold" : "text-muted-foreground hover:text-foreground"}>EN</button>
+-                 <span className="mx-2 text-muted-foreground">/</span>
+-                 <button onClick={() => setLocale("fr")} className={locale === "fr" ? "text-gold" : "text-muted-foreground hover:text-foreground"}>FR</button>
+-+                <span className="mx-2 text-muted-foreground">/</span>
+-+                <button onClick={() => setLocale("pcm")} className={locale === "pcm" ? "text-gold" : "text-muted-foreground hover:text-foreground"}>PCM</button>
+-               </div>
+-               <button onClick={toggle} className="p-2 hover:text-gold transition" aria-label="Toggle theme">
+-                 {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+-@@ -122,6 +124,8 @@ export function Header() {
+-                 <button onClick={() => setLocale("en")} className={locale === "en" ? "text-gold" : ""}>EN</button>
+-                 <span>/</span>
+-                 <button onClick={() => setLocale("fr")} className={locale === "fr" ? "text-gold" : ""}>FR</button>
+-+                <span>/</span>
+-+                <button onClick={() => setLocale("pcm")} className={locale === "pcm" ? "text-gold" : ""}>PCM</button>
+-               </div>
+-             </div>
+-           </motion.div>
+-diff --git a/src/i18n/I18nProvider.tsx b/src/i18n/I18nProvider.tsx
+-index 04cdc3b..6de859b 100644
+---- a/src/i18n/I18nProvider.tsx
+-+++ b/src/i18n/I18nProvider.tsx
+-@@ -14,7 +14,7 @@ const STORAGE_KEY = "clauvera-locale";
+- function getInitialLocale(): Locale {
+-   if (typeof window === "undefined") return "en";
+-   const saved = window.localStorage.getItem(STORAGE_KEY) as Locale | null;
+--  if (saved === "en" || saved === "fr") return saved;
+-+  if (saved === "en" || saved === "fr" || saved === "pcm") return saved;
+-   const nav = window.navigator?.language?.toLowerCase() ?? "";
+-   return nav.startsWith("fr") ? "fr" : "en";
+- }
+-@@ -48,7 +48,7 @@ export function useI18n() {
+-   return ctx;
+- }
+- 
+--export function formatPrice(amount: number, locale: Locale, currency = "EUR") {
+-+export function formatPrice(amount: number, locale: Locale, currency = "XAF") {
+-   try {
+-     return new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-US", {
+-       style: "currency",
+-@@ -56,6 +56,6 @@ export function formatPrice(amount: number, locale: Locale, currency = "EUR") {
+-       maximumFractionDigits: 0,
+-     }).format(amount);
+-   } catch {
+--    return `€${amount}`;
+-+    return `${amount} FCFA`;
+-   }
+- }
+-diff --git a/src/i18n/translations.ts b/src/i18n/translations.ts
+-index 392d00c..710ac58 100644
+---- a/src/i18n/translations.ts
+-+++ b/src/i18n/translations.ts
+-@@ -1,4 +1,4 @@
+--export type Locale = "en" | "fr";
+-+export type Locale = "en" | "fr" | "pcm";
+- 
+- export const translations = {
+-   en: {
+-@@ -23,7 +23,7 @@ export const translations = {
+-       admin: "Admin",
+-     },
+-     home: {
+--      heroEyebrow: "Autumn / Winter 2026",
+-+      heroEyebrow: "870m above sea level — Buea",
+-       heroTitle: "Style Powered by Intelligence",
+-       heroSub: "Curated luxury fashion, intelligently styled for you. From runway to wardrobe — instantly.",
+-       heroCta: "Shop the collection",
+-@@ -133,7 +133,7 @@ export const translations = {
+-     common: {
+-       loading: "Loading...",
+-       error: "Something went wrong.",
+--      currency: "EUR",
+-+      currency: "XAF",
+-     },
+-   },
+-   fr: {
+-@@ -158,7 +158,7 @@ export const translations = {
+-       admin: "Admin",
+-     },
+-     home: {
+--      heroEyebrow: "Automne / Hiver 2026",
+-+      heroEyebrow: "870m d'altitude — Buea",
+-       heroTitle: "Le style propulsé par l'intelligence",
+-       heroSub: "Une mode de luxe sélectionnée, stylisée intelligemment pour vous. Du défilé à votre garde-robe — instantanément.",
+-       heroCta: "Découvrir la collection",
+-@@ -268,7 +268,142 @@ export const translations = {
+-     common: {
+-       loading: "Chargement...",
+-       error: "Une erreur est survenue.",
+--      currency: "EUR",
+-+      currency: "XAF",
+-+    },
+-+  },
+-+  pcm: {
+-+    brand: { tagline: "Style Wey Get Sense" },
+-+    nav: {
+-+      shop: "Shop",
+-+      women: "Women",
+-+      men: "Men",
+-+      shoes: "Shoes",
+-+      accessories: "Accessories",
+-+      newArrivals: "New Ting Dem",
+-+      luxury: "Luxury",
+-+      stylist: "AI Stylist",
+-+      search: "Find product...",
+-+      account: "Account",
+-+      wishlist: "Wishlist",
+-+      cart: "Basket",
+-+      login: "Sign in",
+-+      register: "Open account",
+-+      logout: "Sign out",
+-+      dashboard: "Dashboard",
+-+      admin: "Admin",
+-+    },
+-+    home: {
+-+      heroEyebrow: "870m for up — Buea",
+-+      heroTitle: "Style Wey Get Sense",
+-+      heroSub: "Fine-fine luxury fashion, wey dem style am sharp-sharp for you. Na from runway go your wardrobe — quick-quick.",
+-+      heroCta: "Shop the collection",
+-+      heroAlt: "Discover AI Stylist",
+-+      trending: "Wetin Dey Trend Now",
+-+      trendingSub: "Our AI stylist pick am for you",
+-+      categories: "Shop by Category",
+-+      featured: "Fine Pieces",
+-+      shopTheLook: "Shop the Look",
+-+      shopTheLookSub: "Complete outfit, dem arrange am sharp",
+-+      brands: "House of Brands",
+-+      newsletter: "Join the Atelier",
+-+      newsletterSub: "Get first-first access to new drops, private events, and AI styling.",
+-+      subscribe: "Subscribe",
+-+      emailPlaceholder: "Your email address",
+-+      testimonialsTitle: "People wey get taste love am",
+-+      viewAll: "See all",
+-+    },
+-+    shop: {
+-+      title: "Shop Everything",
+-+      filters: "Filters",
+-+      sortBy: "Arrange by",
+-+      newest: "New ones first",
+-+      priceLow: "Price: Small go big",
+-+      priceHigh: "Price: Big go small",
+-+      results: "results",
+-+      noResults: "No product match your filter dem.",
+-+      allCategories: "All categories",
+-+    },
+-+    product: {
+-+      addToCart: "Put for basket",
+-+      addToWishlist: "Save am",
+-+      removeFromWishlist: "You don save am",
+-+      size: "Size",
+-+      color: "Color",
+-+      selectSize: "Pick your size",
+-+      description: "Description",
+-+      details: "Details",
+-+      shipping: "Shipping & return",
+-+      orderWhatsapp: "Order for WhatsApp",
+-+      sold: "E don finish",
+-+      inStock: "E dey available",
+-+      relatedTitle: "You fit also like dis",
+-+    },
+-+    cart: {
+-+      title: "Your basket",
+-+      empty: "Your basket empty.",
+-+      continueShopping: "Continue shopping",
+-+      subtotal: "Subtotal",
+-+      shipping: "Dem go calculate shipping for checkout",
+-+      checkout: "Checkout",
+-+      remove: "Remove",
+-+      quantity: "Qty",
+-+    },
+-+    wishlist: {
+-+      title: "Your wishlist",
+-+      empty: "Your wishlist empty.",
+-+    },
+-+    auth: {
+-+      signInTitle: "Sign in for Clauvèra",
+-+      signUpTitle: "Open your account",
+-+      email: "Email",
+-+      password: "Password",
+-+      fullName: "Full name",
+-+      signIn: "Sign in",
+-+      signUp: "Open account",
+-+      withGoogle: "Continue with Google",
+-+      noAccount: "You no get account?",
+-+      haveAccount: "You already get account?",
+-+      or: "or",
+-+    },
+-+    dashboard: {
+-+      welcome: "Welcome back",
+-+      orders: "Your orders",
+-+      noOrders: "No order yet.",
+-+      profile: "Profile",
+-+      preferences: "Preferences",
+-+      language: "Language",
+-+      theme: "Theme",
+-+    },
+-+    admin: {
+-+      title: "Atelier · Admin",
+-+      overview: "Overview",
+-+      products: "Products",
+-+      orders: "Orders",
+-+      customers: "Customers",
+-+      totalSales: "Total sales",
+-+      totalOrders: "Orders",
+-+      totalProducts: "Products",
+-+      totalCustomers: "Customers",
+-+    },
+-+    footer: {
+-+      shop: "Shop",
+-+      help: "Help",
+-+      company: "Company",
+-+      legal: "Legal",
+-+      about: "About",
+-+      contact: "Contact",
+-+      faq: "FAQ",
+-+      privacy: "Privacy",
+-+      terms: "Terms",
+-+      shipping: "Shipping",
+-+      returns: "Return",
+-+      rights: "All rights reserved.",
+-+      poweredBy: "Powered by",
+-+    },
+-+    common: {
+-+      loading: "E dey load...",
+-+      error: "Something spoil.",
+-+      currency: "XAF",
+-     },
+-   },
+- };
+diff --git a/public/robots.txt b/public/robots.txt
+new file mode 100644
+index 0000000..ec8848b
+--- /dev/null
++++ b/public/robots.txt
+@@ -0,0 +1,6 @@
++User-agent: *
++Allow: /
++
++Disallow: /admin
++Disallow: /dashboard
++Disallow: /cart
+diff --git a/src/routes/__root.tsx b/src/routes/__root.tsx
+index 5d7d09a..fcfb8c2 100644
+--- a/src/routes/__root.tsx
++++ b/src/routes/__root.tsx
+@@ -60,17 +60,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
+     meta: [
+       { charSet: "utf-8" },
+       { name: "viewport", content: "width=device-width, initial-scale=1" },
+-      { title: "Clauvèra — Style Powered by Intelligence" },
+-      { name: "description", content: "Clauvèra is the futuristic luxury fashion marketplace where AI curates a wardrobe worthy of you." },
++      { title: "Clauvèra — Elevated Fashion, Rooted in Cameroon" },
++      { name: "description", content: "Clauvèra is a luxury fashion house at 870m above sea level in Buea — curated pieces, styled for you, delivered across Cameroon." },
+       { name: "author", content: "Clauvèra" },
+-      { property: "og:title", content: "Clauvèra — Style Powered by Intelligence" },
+-      { property: "og:description", content: "Clauvèra is the futuristic luxury fashion marketplace where AI curates a wardrobe worthy of you." },
++      { property: "og:title", content: "Clauvèra — Elevated Fashion, Rooted in Cameroon" },
++      { property: "og:description", content: "Clauvèra is a luxury fashion house at 870m above sea level in Buea — curated pieces, styled for you, delivered across Cameroon." },
+       { property: "og:type", content: "website" },
+       { property: "og:site_name", content: "Clauvèra" },
+       { name: "twitter:card", content: "summary_large_image" },
+       { name: "theme-color", content: "#0a0a0f" },
+-      { name: "twitter:title", content: "Clauvèra — Style Powered by Intelligence" },
+-      { name: "twitter:description", content: "Clauvèra is the futuristic luxury fashion marketplace where AI curates a wardrobe worthy of you." },
++      { name: "twitter:title", content: "Clauvèra — Elevated Fashion, Rooted in Cameroon" },
++      { name: "twitter:description", content: "Clauvèra is a luxury fashion house at 870m above sea level in Buea — curated pieces, styled for you, delivered across Cameroon." },
+       { property: "og:image", content: "/favicon-512.png" },
+       { name: "twitter:image", content: "/favicon-512.png" },
+     ],
+diff --git a/src/routes/index.tsx b/src/routes/index.tsx
+index b036124..48969b3 100644
+--- a/src/routes/index.tsx
++++ b/src/routes/index.tsx
+@@ -9,9 +9,9 @@ import { useI18n } from "@/i18n/I18nProvider";
+ export const Route = createFileRoute("/")({
+   head: () => ({
+     meta: [
+-      { title: "Clauvèra — Style Powered by Intelligence" },
+-      { name: "description", content: "Discover Clauvèra, a futuristic luxury fashion marketplace where AI curates couture, runway pieces and timeless essentials." },
+-      { property: "og:title", content: "Clauvèra — Style Powered by Intelligence" },
++      { title: "Clauvèra — Elevated Fashion, Rooted in Cameroon" },
++      { name: "description", content: "Clauvèra is a luxury fashion house at 870m above sea level in Buea — discover curated couture, runway pieces and timeless essentials, delivered across Cameroon." },
++      { property: "og:title", content: "Clauvèra — Elevated Fashion, Rooted in Cameroon" },
+       { property: "og:image", content: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&q=80" },
+     ],
+     links: [{ rel: "canonical", href: "/" }],
