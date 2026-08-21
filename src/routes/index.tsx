@@ -9,9 +9,9 @@ import { useI18n } from "@/i18n/I18nProvider";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Clauvèra — Style Powered by Intelligence" },
-      { name: "description", content: "Discover Clauvèra, a futuristic luxury fashion marketplace where AI curates couture, runway pieces and timeless essentials." },
-      { property: "og:title", content: "Clauvèra — Style Powered by Intelligence" },
+      { title: "Clauvèra — Elevated Fashion, Rooted in Cameroon" },
+      { name: "description", content: "Clauvèra is a luxury fashion house at 870m above sea level in Buea — discover curated couture, runway pieces and timeless essentials, delivered across Cameroon." },
+      { property: "og:title", content: "Clauvèra — Elevated Fashion, Rooted in Cameroon" },
       { property: "og:image", content: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&q=80" },
     ],
     links: [{ rel: "canonical", href: "/" }],
