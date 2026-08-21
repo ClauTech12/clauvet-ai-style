@@ -1,7 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Minus, Plus, X } from "lucide-react";
-import { fetchCart, removeCartItem, updateCartQty } from "@/lib/cart";
+import { Minus, Plus, X, Loader2 } from "lucide-react";
+import { fetchCart, removeCartItem, updateCartQty, clearCart } from "@/lib/cart";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -15,6 +17,8 @@ function CartPage() {
   const { t, locale } = useI18n();
   const { user, loading } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [placing, setPlacing] = useState(false);
   const { data: items = [] } = useQuery({
     queryKey: ["cart", user?.id],
     queryFn: () => fetchCart(user!.id),
@@ -37,9 +41,47 @@ function CartPage() {
   const update = async (id: string, qty: number) => { await updateCartQty(id, qty); qc.invalidateQueries({ queryKey: ["cart"] }); };
   const remove = async (id: string) => { await removeCartItem(id); qc.invalidateQueries({ queryKey: ["cart"] }); };
 
-  const waMsg = locale === "fr"
-    ? `Bonjour Clauvèra, je souhaite finaliser ma commande :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale)}`
-    : `Hi Clauvèra, I'd like to place this order:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale)}`;
+  const currency = items[0]?.product?.currency ?? "XAF";
+
+  async function handleCheckout() {
+    if (!user || items.length === 0) return;
+    setPlacing(true);
+    try {
+      const { data: order, error: orderErr } = await supabase
+        .from("orders")
+        .insert({ user_id: user.id, status: "pending", total: subtotal, currency })
+        .select()
+        .single();
+      if (orderErr || !order) throw orderErr;
+
+      const orderItems = items.map(i => ({
+        order_id: order.id,
+        product_id: i.product.id,
+        product_name: locale === "fr" ? i.product.name_fr : i.product.name_en,
+        price: i.product.price,
+        quantity: i.quantity,
+        size: i.size,
+        color: i.color,
+      }));
+      const { error: itemsErr } = await supabase.from("order_items").insert(orderItems);
+      if (itemsErr) throw itemsErr;
+
+      const ref = order.id.slice(0, 8).toUpperCase();
+      const waMsg = locale === "fr"
+        ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}`
+        : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}`;
+
+      await clearCart(user.id);
+      qc.invalidateQueries({ queryKey: ["cart"] });
+      window.open(whatsappLink(waMsg), "_blank", "noopener,noreferrer");
+      navigate({ to: "/dashboard" });
+    } catch (e) {
+      console.error("Checkout failed:", e);
+      alert(t.common.error);
+    } finally {
+      setPlacing(false);
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-10 md:py-16">
@@ -69,15 +111,15 @@ function CartPage() {
                         <p className="text-xs text-muted-foreground mt-1">{[i.size, i.color].filter(Boolean).join(" · ")}</p>
                       )}
                     </div>
-                    <button onClick={() => remove(i.id)} aria-label={t.cart.remove}><X className="w-4 h-4" /></button>
+                    <button onClick={() => remove(i.id)} aria-label={t.cart.remove} className="text-muted-foreground hover:text-destructive transition"><X className="w-4 h-4" /></button>
                   </div>
                   <div className="mt-4 flex items-center justify-between">
                     <div className="inline-flex items-center border border-border rounded-sm">
-                      <button onClick={() => update(i.id, i.quantity - 1)} className="w-9 h-9 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
-                      <span className="w-8 text-center text-sm">{i.quantity}</span>
-                      <button onClick={() => update(i.id, i.quantity + 1)} className="w-9 h-9 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
+                      <button onClick={() => update(i.id, i.quantity - 1)} className="w-9 h-9 flex items-center justify-center hover:text-gold transition"><Minus className="w-3 h-3" /></button>
+                      <span className="w-8 text-center font-mono text-sm">{i.quantity}</span>
+                      <button onClick={() => update(i.id, i.quantity + 1)} className="w-9 h-9 flex items-center justify-center hover:text-gold transition"><Plus className="w-3 h-3" /></button>
                     </div>
-                    <span className="font-medium">{formatPrice(Number(i.product.price) * i.quantity, locale, i.product.currency)}</span>
+                    <span className="font-mono font-medium">{formatPrice(Number(i.product.price) * i.quantity, locale, i.product.currency)}</span>
                   </div>
                 </div>
               </div>
@@ -85,15 +127,26 @@ function CartPage() {
           </div>
 
           <aside className="bg-card border border-border rounded-sm p-6 h-fit lg:sticky lg:top-28">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="altitude-rule h-5" />
+              <span className="eyebrow-altitude">{t.cart.orderSummary}</span>
+            </div>
             <h2 className="font-display text-2xl">{t.cart.subtotal}</h2>
             <div className="mt-4 flex justify-between text-lg">
               <span>{t.cart.subtotal}</span>
-              <span className="font-medium">{formatPrice(subtotal, locale)}</span>
+              <span className="font-mono font-medium">{formatPrice(subtotal, locale)}</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{t.cart.shipping}</p>
-            <a href={whatsappLink(waMsg)} target="_blank" rel="noopener noreferrer" className="mt-6 w-full h-14 bg-gradient-luxury text-gold-foreground rounded-sm text-xs uppercase tracking-luxury flex items-center justify-center">
+            <button
+              onClick={handleCheckout} disabled={placing}
+              className="mt-6 w-full h-14 bg-gradient-luxury text-gold-foreground rounded-sm text-xs uppercase tracking-luxury flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-60"
+            >
+              {placing && <Loader2 className="w-4 h-4 animate-spin" />}
               {t.cart.checkout}
-            </a>
+            </button>
+            <p className="mt-4 text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
+              {t.cart.trustNote}
+            </p>
           </aside>
         </div>
       )}

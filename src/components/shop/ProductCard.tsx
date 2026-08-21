@@ -24,24 +24,25 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
           {product.is_new && (
-            <span className="absolute top-3 left-3 text-[10px] uppercase tracking-luxury bg-background/90 px-2 py-1 rounded-sm">
-              {locale === "fr" ? "Nouveau" : "New"}
+            <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-luxury bg-primary text-primary-foreground px-2 py-1 rounded-sm">
+              {t.product.newBadge}
             </span>
           )}
           <button
             aria-label={t.product.addToWishlist}
             onClick={(e) => { e.preventDefault(); }}
-            className="absolute top-3 right-3 w-9 h-9 rounded-full glass flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+            className="absolute top-3 right-3 w-9 h-9 rounded-full glass flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gold hover:text-gold-foreground"
           >
             <Heart className="w-4 h-4" />
           </button>
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
         </div>
         <div className="mt-3 px-1">
           {product.brand && (
-            <p className="text-[10px] uppercase tracking-luxury text-muted-foreground">{product.brand}</p>
+            <p className="font-mono text-[10px] uppercase tracking-luxury text-muted-foreground">{product.brand}</p>
           )}
-          <h3 className="mt-1 text-sm font-medium truncate">{name}</h3>
-          <p className="mt-1 text-sm text-foreground/80">{formatPrice(product.price, locale, product.currency)}</p>
+          <h3 className="mt-1 text-sm font-medium truncate group-hover:text-gold transition-colors">{name}</h3>
+          <p className="mt-1 font-mono text-sm text-foreground/80">{formatPrice(product.price, locale, product.currency)}</p>
         </div>
       </Link>
     </motion.div>

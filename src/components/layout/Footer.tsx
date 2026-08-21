@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/clautech-logo.png";
+import clauveraMark from "@/assets/clauvera-mark.png";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export function Footer() {
@@ -9,12 +10,17 @@ export function Footer() {
       <div className="container mx-auto px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
           <div className="col-span-2 lg:col-span-2">
-            <Link to="/" className="inline-block">
+            <Link to="/" className="inline-flex items-center gap-2">
+              <img src={clauveraMark} alt="" className="h-8 w-auto" />
               <span className="font-display text-3xl tracking-tight">Clauvèra</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
               {t.brand.tagline}
             </p>
+            <div className="mt-6 flex items-center gap-3">
+              <span className="text-xs uppercase tracking-luxury text-muted-foreground">{t.footer.poweredBy}</span>
+              <img src={logo} alt="Clautech Digital Solutions" className="h-10 w-auto rounded-sm" />
+            </div>
           </div>
           <div>
             <h4 className="font-sans text-xs uppercase tracking-luxury text-muted-foreground mb-4">{t.footer.shop}</h4>
@@ -45,12 +51,11 @@ export function Footer() {
         </div>
 
         <div className="mt-14 pt-8 border-t border-border flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Clauvèra. {t.footer.rights}
-          </p>
-          <div className="flex items-center gap-3 md:justify-end">
-            <span className="text-xs uppercase tracking-luxury text-muted-foreground">{t.footer.poweredBy}</span>
-            <img src={logo} alt="Clautech" className="h-7 w-auto" />
+          <div className="flex items-center gap-3">
+            <span className="altitude-rule h-4" />
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} Clauvèra. {t.footer.rights}
+            </p>
           </div>
         </div>
       </div>

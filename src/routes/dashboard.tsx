@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useAdminRole } from "@/hooks/use-admin-role";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { LogOut } from "lucide-react";
@@ -16,6 +17,7 @@ function DashboardPage() {
   const { t, locale, setLocale } = useI18n();
   const { theme, setTheme } = useTheme();
   const { user, loading } = useAuth();
+  const { isStaff: isAdmin } = useAdminRole();
   const navigate = useNavigate();
 
   useEffect(() => { if (!loading && !user) navigate({ to: "/login", replace: true }); }, [user, loading, navigate]);
@@ -33,14 +35,6 @@ function DashboardPage() {
     queryFn: async () => {
       const { data } = await supabase.from("orders").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
       return data ?? [];
-    },
-    enabled: !!user,
-  });
-  const { data: isAdmin } = useQuery({
-    queryKey: ["isAdmin", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user!.id).eq("role", "admin").maybeSingle();
-      return !!data;
     },
     enabled: !!user,
   });
@@ -87,15 +81,16 @@ function DashboardPage() {
             <div>
               <p className="text-xs uppercase tracking-luxury text-muted-foreground mb-2">{t.dashboard.language}</p>
               <div className="flex gap-2">
-                <button onClick={() => setLocale("en")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${locale === "en" ? "border-foreground" : "border-border"}`}>EN</button>
-                <button onClick={() => setLocale("fr")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${locale === "fr" ? "border-foreground" : "border-border"}`}>FR</button>
+                <button onClick={() => setLocale("en")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${locale === "en" ? "border-gold text-gold" : "border-border"}`}>EN</button>
+                <button onClick={() => setLocale("fr")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${locale === "fr" ? "border-gold text-gold" : "border-border"}`}>FR</button>
+                <button onClick={() => setLocale("pcm")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${locale === "pcm" ? "border-gold text-gold" : "border-border"}`}>PCM</button>
               </div>
             </div>
             <div>
               <p className="text-xs uppercase tracking-luxury text-muted-foreground mb-2">{t.dashboard.theme}</p>
               <div className="flex gap-2">
-                <button onClick={() => setTheme("light")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${theme === "light" ? "border-foreground" : "border-border"}`}>Light</button>
-                <button onClick={() => setTheme("dark")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${theme === "dark" ? "border-foreground" : "border-border"}`}>Dark</button>
+                <button onClick={() => setTheme("light")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${theme === "light" ? "border-gold text-gold" : "border-border"}`}>Light</button>
+                <button onClick={() => setTheme("dark")} className={`h-10 px-4 border rounded-sm text-xs uppercase tracking-luxury ${theme === "dark" ? "border-gold text-gold" : "border-border"}`}>Dark</button>
               </div>
             </div>
             {isAdmin && (

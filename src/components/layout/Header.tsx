@@ -5,6 +5,7 @@ import { Heart, Menu, Moon, Search, ShoppingBag, Sun, User, X } from "lucide-rea
 import { useI18n } from "@/i18n/I18nProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useAuth } from "@/hooks/use-auth";
+import clauveraMark from "@/assets/clauvera-mark.png";
 
 export function Header() {
   const { t, locale, setLocale } = useI18n();
@@ -39,7 +40,8 @@ export function Header() {
               <button onClick={() => setOpen(true)} className="md:hidden p-2 -ml-2" aria-label="Menu">
                 <Menu className="w-5 h-5" />
               </button>
-              <Link to="/" className="font-display text-2xl md:text-3xl tracking-tight">
+              <Link to="/" className="flex items-center gap-2 font-display text-2xl md:text-3xl tracking-tight">
+                <img src={clauveraMark} alt="" className="h-8 w-auto md:h-10" />
                 Clauvèra
               </Link>
               <nav className="hidden md:flex items-center gap-7 ml-6">
@@ -108,7 +110,10 @@ export function Header() {
           >
             <div className="container mx-auto px-6 py-6">
               <div className="flex items-center justify-between">
-                <span className="font-display text-2xl">Clauvèra</span>
+                <span className="flex items-center gap-2 font-display text-2xl">
+                  <img src={clauveraMark} alt="" className="h-7 w-auto" />
+                  Clauvèra
+                </span>
                 <button onClick={() => setOpen(false)} className="p-2" aria-label="Close">
                   <X className="w-6 h-6" />
                 </button>

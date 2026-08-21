@@ -12,13 +12,16 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.slug.replace(/-/g, " ")} — Clauvèra` },
-      { property: "og:title", content: `Clauvèra` },
-    ],
-    links: [{ rel: "canonical", href: `/product/${params.slug}` }],
-  }),
+  head: ({ params }) => {
+    const prettyName = params.slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    return {
+      meta: [
+        { title: `${prettyName} — Clauvèra` },
+        { property: "og:title", content: `${prettyName} — Clauvèra` },
+      ],
+      links: [{ rel: "canonical", href: `/product/${params.slug}` }],
+    };
+  },
   component: ProductPage,
 });
 
@@ -92,9 +95,9 @@ function ProductPage() {
           {product.brand && <p className="text-xs uppercase tracking-luxury text-muted-foreground">{product.brand}</p>}
           <h1 className="font-display text-3xl md:text-5xl mt-2">{name}</h1>
           <div className="mt-4 flex items-baseline gap-3">
-            <span className="text-2xl font-medium">{formatPrice(product.price, locale, product.currency)}</span>
+            <span className="font-mono text-2xl font-medium">{formatPrice(product.price, locale, product.currency)}</span>
             {product.compare_at_price && (
-              <span className="text-base text-muted-foreground line-through">{formatPrice(product.compare_at_price, locale, product.currency)}</span>
+              <span className="font-mono text-base text-muted-foreground line-through">{formatPrice(product.compare_at_price, locale, product.currency)}</span>
             )}
           </div>
 
@@ -107,7 +110,7 @@ function ProductPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map(s => (
-                  <button key={s} onClick={() => setSize(s)} className={`min-w-[3rem] h-11 px-4 border rounded-sm text-sm transition ${size === s ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground"}`}>
+                  <button key={s} onClick={() => setSize(s)} className={`min-w-[3rem] h-11 px-4 border rounded-sm text-sm transition ${size === s ? "border-gold bg-gold text-gold-foreground" : "border-border hover:border-foreground"}`}>
                     {s}
                   </button>
                 ))}
@@ -120,7 +123,7 @@ function ProductPage() {
               <h3 className="text-xs uppercase tracking-luxury mb-3">{t.product.color}</h3>
               <div className="flex flex-wrap gap-2">
                 {product.colors.map(c => (
-                  <button key={c} onClick={() => setColor(c)} className={`h-11 px-4 border rounded-sm text-sm transition ${color === c ? "border-foreground" : "border-border hover:border-foreground"}`}>
+                  <button key={c} onClick={() => setColor(c)} className={`h-11 px-4 border rounded-sm text-sm transition ${color === c ? "border-gold text-gold" : "border-border hover:border-foreground"}`}>
                     {c}
                   </button>
                 ))}
@@ -148,9 +151,9 @@ function ProductPage() {
           </a>
 
           <div className="mt-10 grid grid-cols-3 gap-4 text-center text-[11px] uppercase tracking-luxury text-muted-foreground border-t border-border pt-8">
-            <div><Truck className="w-5 h-5 mx-auto mb-2" />Worldwide</div>
-            <div><Shield className="w-5 h-5 mx-auto mb-2" />Authentic</div>
-            <div><RotateCcw className="w-5 h-5 mx-auto mb-2" />Returns</div>
+            <div><Truck className="w-5 h-5 mx-auto mb-2" />{t.product.worldwide}</div>
+            <div><Shield className="w-5 h-5 mx-auto mb-2" />{t.product.authentic}</div>
+            <div><RotateCcw className="w-5 h-5 mx-auto mb-2" />{t.product.returns}</div>
           </div>
         </div>
       </div>

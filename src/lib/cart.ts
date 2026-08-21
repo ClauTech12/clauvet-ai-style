@@ -37,6 +37,11 @@ export async function removeCartItem(id: string) {
   if (error) throw error;
 }
 
+export async function clearCart(userId: string) {
+  const { error } = await supabase.from("cart_items").delete().eq("user_id", userId);
+  if (error) throw error;
+}
+
 export async function fetchWishlist(userId: string) {
   const { data, error } = await supabase
     .from("wishlists")
