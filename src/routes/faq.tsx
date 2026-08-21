@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const faqs = [
-  { q: "Are all Clauvèra pieces authentic?", a: "Every item is sourced directly from the maison or authorized partners and authenticated by our atelier team." },
-  { q: "How long does shipping take?", a: "Most orders are dispatched within 24h. Worldwide express delivery in 2–5 business days." },
-  { q: "What is your return policy?", a: "Free returns within 30 days on unworn items in original packaging." },
-  { q: "How does the AI stylist work?", a: "Tell it the occasion, mood, or piece you love — it curates a complete look from our catalogue in seconds." },
+  { q: "Are all Clauvèra pieces authentic?", a: "Every item is sourced directly from our suppliers or authorized partners and checked by our team before it's listed." },
+  { q: "How long does shipping take?", a: "Buea: within 5 hours. Limbe and Mamfe: within 10 hours. Kumba and Douala: within 12 hours. Delivery fees are confirmed with you on WhatsApp." },
+  { q: "What is your return policy?", a: "If an item arrives defective or you received the wrong item, message us on WhatsApp within 48 hours for a free replacement or refund. Outside of that, all sales are final." },
+  { q: "How do I pay?", a: "You confirm your order and payment directly with us on WhatsApp — Mobile Money or cash on delivery. A real person replies, every time." },
 ];
 
 export const Route = createFileRoute("/faq")({

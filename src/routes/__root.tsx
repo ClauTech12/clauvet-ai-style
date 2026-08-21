@@ -15,7 +15,6 @@ import { ThemeProvider } from "@/theme/ThemeProvider";
 import { Header, MobileBottomBar } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
-import { AIStylistFloat } from "@/components/layout/AIStylistFloat";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -127,7 +126,6 @@ function RootComponent() {
             <Footer />
             <MobileBottomBar />
             <WhatsAppFloat />
-            <AIStylistFloat />
             <Toaster richColors position="top-center" />
           </div>
         </I18nProvider>

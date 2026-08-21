@@ -64,9 +64,6 @@ function HomePage() {
             <Link to="/shop" className="group inline-flex items-center gap-2 bg-white text-black px-8 h-14 rounded-sm text-xs uppercase tracking-luxury hover:bg-gold transition">
               {t.home.heroCta} <ArrowRight className="w-4 h-4 transition group-hover:translate-x-1" />
             </Link>
-            <a href="#stylist" className="inline-flex items-center gap-2 border border-white/70 px-8 h-14 rounded-sm text-xs uppercase tracking-luxury hover:bg-white/10 transition">
-              <Sparkles className="w-4 h-4" /> {t.home.heroAlt}
-            </a>
           </motion.div>
         </div>
       </section>
@@ -118,8 +115,8 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Shop the Look / AI Stylist banner */}
-      <section id="stylist" className="container mx-auto px-4 md:px-6 py-20 md:py-28">
+      {/* Shop the Look */}
+      <section className="container mx-auto px-4 md:px-6 py-20 md:py-28">
         <div className="grid md:grid-cols-2 gap-10 items-center">
           <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
             <p className="text-xs uppercase tracking-luxury text-gold">{t.brand.tagline}</p>

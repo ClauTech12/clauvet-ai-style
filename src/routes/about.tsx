@@ -5,7 +5,7 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About — Clauvèra" },
-      { name: "description", content: "Clauvèra blends luxury fashion with AI to redefine how the world dresses." },
+      { name: "description", content: "Clauvèra is a luxury fashion house at 870m above sea level in Buea, Cameroon — curated pieces, styled by real people." },
     ],
     links: [{ rel: "canonical", href: "/about" }],
   }),
@@ -18,16 +18,17 @@ function AboutPage() {
     <div className="container mx-auto px-6 py-20 md:py-28 max-w-3xl">
       <p className="text-xs uppercase tracking-luxury text-gold">Clauvèra</p>
       <h1 className="font-display text-5xl md:text-7xl mt-4">
-        {locale === "fr" ? "Une maison propulsée par l'intelligence." : "A house powered by intelligence."}
+        {locale === "fr" ? "Une maison élevée, enracinée au Cameroun." : "A house elevated, rooted in Cameroon."}
       </h1>
       <div className="mt-10 space-y-6 text-lg text-muted-foreground leading-relaxed">
         <p>{locale === "fr"
-          ? "Clauvèra réunit le savoir-faire du luxe et l'intelligence artificielle pour composer une garde-robe taillée pour vous."
-          : "Clauvèra unites luxury craftsmanship with artificial intelligence to compose a wardrobe tailored for you."}</p>
+          ? "Clauvèra est née à Buea, 870m au-dessus du niveau de la mer, avec une idée simple : le luxe ne doit pas venir d'ailleurs pour compter ici."
+          : "Clauvèra was born in Buea, 870m above sea level, on a simple idea: luxury doesn't have to come from elsewhere to matter here."}</p>
         <p>{locale === "fr"
-          ? "De la haute couture aux essentiels modernes, chaque pièce est sélectionnée par notre styliste IA et les artisans de notre atelier."
-          : "From couture to modern essentials, each piece is selected by our AI stylist and the artisans of our atelier."}</p>
+          ? "Chaque pièce est sélectionnée par notre équipe, et chaque commande est confirmée directement avec vous — sur WhatsApp, par une vraie personne, à chaque fois."
+          : "Every piece is hand-selected by our team, and every order is confirmed directly with you — over WhatsApp, by a real person, every time."}</p>
       </div>
     </div>
   );
 }
+
