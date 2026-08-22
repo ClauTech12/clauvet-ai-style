@@ -1,6 +1,8 @@
 import { jsPDF } from "jspdf";
 import { formatPrice } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/translations";
+import clauveraMarkUrl from "@/assets/clauvera-mark.png";
+import clautechLogoUrl from "@/assets/clautech-logo.png";
 
 type OrderItem = {
   product_name: string;
@@ -31,48 +33,76 @@ const GOLD: [number, number, number] = [184, 149, 91];
 const INK: [number, number, number] = [20, 20, 22];
 const MUTED: [number, number, number] = [110, 110, 115];
 
-export function generateReceiptPdf(order: Order, items: OrderItem[], locale: Locale = "en") {
+async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function generateReceiptPdf(order: Order, items: OrderItem[], locale: Locale = "en") {
+  const [markDataUrl, clautechDataUrl] = await Promise.all([
+    loadImageAsDataUrl(clauveraMarkUrl),
+    loadImageAsDataUrl(clautechLogoUrl),
+  ]);
+
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 56;
-  let y = 64;
 
   const ref = order.id.slice(0, 8).toUpperCase();
   const addr = order.shipping_address ?? {};
   const isFr = locale === "fr";
 
-  // Header — brand
-  doc.setFont("times", "bold");
-  doc.setFontSize(26);
+  // Order receipt label + ref, pinned top-right
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
   doc.setTextColor(...INK);
-  doc.text("Clauvèra", margin, y);
+  doc.text(isFr ? "REÇU DE COMMANDE" : "ORDER RECEIPT", pageWidth - margin, 50, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(...MUTED);
+  doc.text(`#${ref}`, pageWidth - margin, 66, { align: "right" });
+  doc.text(
+    new Date(order.created_at).toLocaleDateString(isFr ? "fr-FR" : "en-US", { year: "numeric", month: "long", day: "numeric" }),
+    pageWidth - margin,
+    80,
+    { align: "right" }
+  );
+
+  // Centered header — mark, wordmark, tagline
+  let y = 44;
+  if (markDataUrl) {
+    const markW = 26;
+    const markH = markW * (96 / 79);
+    doc.addImage(markDataUrl, "PNG", pageWidth / 2 - markW / 2, y, markW, markH);
+    y += markH + 10;
+  }
+  doc.setFont("times", "bold");
+  doc.setFontSize(24);
+  doc.setTextColor(...INK);
+  doc.text("Clauvèra", pageWidth / 2, y, { align: "center" });
+  y += 16;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...GOLD);
   doc.text(
     isFr ? "870m D'ALTITUDE — BUEA, CAMEROUN" : "870M ABOVE SEA LEVEL — BUEA, CAMEROON",
-    margin,
-    y + 16
+    pageWidth / 2,
+    y,
+    { align: "center" }
   );
 
-  // Receipt label + ref, right aligned
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(...INK);
-  doc.text(isFr ? "REÇU DE COMMANDE" : "ORDER RECEIPT", pageWidth - margin, y - 6, { align: "right" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...MUTED);
-  doc.text(`#${ref}`, pageWidth - margin, y + 10, { align: "right" });
-  doc.text(
-    new Date(order.created_at).toLocaleDateString(isFr ? "fr-FR" : "en-US", { year: "numeric", month: "long", day: "numeric" }),
-    pageWidth - margin,
-    y + 24,
-    { align: "right" }
-  );
-
-  y += 48;
+  y += 26;
   doc.setDrawColor(...GOLD);
   doc.setLineWidth(1);
   doc.line(margin, y, pageWidth - margin, y);
@@ -158,6 +188,18 @@ export function generateReceiptPdf(order: Order, items: OrderItem[], locale: Loc
     : "Present this receipt (with ID) at delivery or pickup to confirm your order.";
   const noteLines = doc.splitTextToSize(note, pageWidth - margin * 2);
   doc.text(noteLines, margin, y);
+  y += 16 * noteLines.length + 24;
+
+  if (clautechDataUrl) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MUTED);
+    doc.text(isFr ? "PROPULSÉ PAR" : "POWERED BY", pageWidth / 2, y, { align: "center" });
+    y += 12;
+    const logoW = 68;
+    const logoH = logoW * (120 / 305);
+    doc.addImage(clautechDataUrl, "PNG", pageWidth / 2 - logoW / 2, y, logoW, logoH);
+  }
 
   doc.save(`Clauvera-Receipt-${ref}.pdf`);
 }

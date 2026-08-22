@@ -30,7 +30,8 @@ function AdminOrdersPage() {
     queryKey: ["adminOrderItems", expanded],
     queryFn: async () => {
       if (!expanded) return {};
-      const { data } = await supabase.from("order_items").select("*").eq("order_id", expanded);
+      const { data, error } = await supabase.from("order_items").select("*").eq("order_id", expanded);
+      if (error) console.error("Failed to fetch order items:", error);
       return { [expanded]: data ?? [] };
     },
     enabled: !!expanded,
@@ -43,7 +44,7 @@ function AdminOrdersPage() {
 
   async function downloadReceipt(order: any) {
     const { generateReceiptPdf } = await import("@/lib/receipt");
-    generateReceiptPdf(order, items[order.id] ?? [], locale);
+    await generateReceiptPdf(order, items[order.id] ?? [], locale);
   }
 
   const statusLabel = (s: string) => (t.admin as any)[`orderStatus_${s}`] ?? s;

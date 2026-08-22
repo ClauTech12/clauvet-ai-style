@@ -48,9 +48,10 @@ function DashboardPage() {
   async function downloadReceipt(order: any) {
     setDownloadingId(order.id);
     try {
-      const { data: orderItems } = await supabase.from("order_items").select("*").eq("order_id", order.id);
+      const { data: orderItems, error } = await supabase.from("order_items").select("*").eq("order_id", order.id);
+      if (error) console.error("Failed to fetch order items for receipt:", error);
       const { generateReceiptPdf } = await import("@/lib/receipt");
-      generateReceiptPdf(order, orderItems ?? [], locale);
+      await generateReceiptPdf(order, orderItems ?? [], locale);
     } finally {
       setDownloadingId(null);
     }
