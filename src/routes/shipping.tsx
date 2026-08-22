@@ -1,12 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-
-const zones = [
-  { place: "Buea", time: "Within 5 hours" },
-  { place: "Limbe", time: "Within 10 hours" },
-  { place: "Mamfe", time: "Within 10 hours" },
-  { place: "Kumba", time: "Within 12 hours" },
-  { place: "Douala", time: "Within 12 hours" },
-];
+import { DELIVERY_ZONES } from "@/lib/delivery";
 
 export const Route = createFileRoute("/shipping")({
   head: () => ({ meta: [{ title: "Shipping — Clauvèra" }], links: [{ rel: "canonical", href: "/shipping" }] }),
@@ -17,7 +10,7 @@ export const Route = createFileRoute("/shipping")({
         We deliver from Buea across the Southwest and to Douala. Once your order is confirmed on WhatsApp, here's roughly how long delivery takes:
       </p>
       <div className="mt-8 divide-y divide-border border-y border-border">
-        {zones.map((z) => (
+        {DELIVERY_ZONES.map((z) => (
           <div key={z.place} className="flex items-center justify-between py-4">
             <span className="font-display text-lg">{z.place}</span>
             <span className="text-sm text-muted-foreground">{z.time}</span>

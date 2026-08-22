@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { whatsappLink } from "@/lib/whatsapp";
+import { DELIVERY_ZONES, DELIVERY_TOWNS } from "@/lib/delivery";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Cart — Clauvèra" }], links: [{ rel: "canonical", href: "/cart" }] }),
@@ -24,7 +25,6 @@ function CartPage() {
   const [town, setTown] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const towns = ["Buea", "Limbe", "Mamfe", "Kumba", "Douala"];
   const { data: items = [] } = useQuery({
     queryKey: ["cart", user?.id],
     queryFn: () => fetchCart(user!.id),
@@ -171,8 +171,13 @@ function CartPage() {
                 className="w-full h-11 px-3 bg-background border border-border rounded-sm text-sm outline-none focus:ring-2 focus:ring-gold"
               >
                 <option value="">{t.cart.selectTown}</option>
-                {towns.map(tw => <option key={tw} value={tw}>{tw}</option>)}
+                {DELIVERY_TOWNS.map(tw => <option key={tw} value={tw}>{tw}</option>)}
               </select>
+              {town && (
+                <p className="text-xs text-gold">
+                  {DELIVERY_ZONES.find(z => z.place === town)?.time}
+                </p>
+              )}
               <input
                 value={address} onChange={e => setAddress(e.target.value)} placeholder={t.cart.address}
                 className="w-full h-11 px-3 bg-background border border-border rounded-sm text-sm outline-none focus:ring-2 focus:ring-gold"
@@ -193,6 +198,17 @@ function CartPage() {
             <p className="mt-4 text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
               {t.cart.trustNote}
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-luxury px-3 h-8 rounded-sm border border-border text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FFCB05]" /> MTN MoMo
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-luxury px-3 h-8 rounded-sm border border-border text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6600]" /> Orange Money
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-luxury px-3 h-8 rounded-sm border border-border text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold" /> {t.cart.cashOnDelivery}
+              </span>
+            </div>
           </aside>
         </div>
       )}
