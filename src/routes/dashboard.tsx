@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAdminRole } from "@/hooks/use-admin-role";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { useTheme } from "@/theme/ThemeProvider";
-import { LogOut } from "lucide-react";
+import { generateReceiptPdf } from "@/lib/receipt";
+import { LogOut, Download } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Clauvèra" }] }),
@@ -43,6 +44,17 @@ function DashboardPage() {
 
   const logout = async () => { await supabase.auth.signOut(); navigate({ to: "/" }); };
 
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  async function downloadReceipt(order: any) {
+    setDownloadingId(order.id);
+    try {
+      const { data: orderItems } = await supabase.from("order_items").select("*").eq("order_id", order.id);
+      generateReceiptPdf(order, orderItems ?? [], locale);
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-10 md:py-16">
       <header className="flex items-center justify-between">
@@ -63,12 +75,22 @@ function DashboardPage() {
           ) : (
             <div className="divide-y divide-border border-y border-border">
               {orders.map((o: any) => (
-                <div key={o.id} className="py-5 flex items-center justify-between text-sm">
-                  <div>
+                <div key={o.id} className="py-5 flex items-center justify-between text-sm gap-4">
+                  <div className="min-w-0">
                     <p className="font-medium">#{o.id.slice(0, 8)}</p>
                     <p className="text-xs text-muted-foreground uppercase tracking-luxury mt-1">{o.status}</p>
                   </div>
-                  <p>{formatPrice(Number(o.total), locale, o.currency)}</p>
+                  <div className="flex items-center gap-4 flex-shrink-0">
+                    <p>{formatPrice(Number(o.total), locale, o.currency)}</p>
+                    <button
+                      onClick={() => downloadReceipt(o)}
+                      disabled={downloadingId === o.id}
+                      className="flex items-center gap-1.5 text-xs uppercase tracking-luxury border border-border px-3 h-9 rounded-sm hover:border-gold hover:text-gold transition disabled:opacity-50"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">{t.dashboard.downloadReceipt}</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

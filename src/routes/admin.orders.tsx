@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Download } from "lucide-react";
+import { generateReceiptPdf } from "@/lib/receipt";
 
 export const Route = createFileRoute("/admin/orders")({
   head: () => ({ meta: [{ title: "Orders — Admin — Clauvèra" }, { name: "robots", content: "noindex" }] }),
@@ -79,6 +80,24 @@ function AdminOrdersPage() {
               </button>
               {expanded === o.id && (
                 <div className="pb-4 pl-8">
+                  <div className="mb-4">
+                    <p className="text-xs uppercase tracking-luxury text-muted-foreground mb-2">{t.admin.customerDelivery}</p>
+                    {o.shipping_address?.full_name || o.shipping_address?.phone || o.shipping_address?.town ? (
+                      <div className="text-sm space-y-0.5">
+                        {o.shipping_address?.full_name && <p>{o.shipping_address.full_name}</p>}
+                        {o.shipping_address?.phone && <p className="text-muted-foreground">{o.shipping_address.phone}</p>}
+                        {o.shipping_address?.town && (
+                          <p className="text-muted-foreground">
+                            {o.shipping_address.town}
+                            {o.shipping_address.address && ` — ${o.shipping_address.address}`}
+                          </p>
+                        )}
+                        {o.shipping_address?.notes && <p className="text-muted-foreground italic">"{o.shipping_address.notes}"</p>}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{t.admin.noAddress}</p>
+                    )}
+                  </div>
                   <div className="flex flex-wrap items-center gap-2 mb-4">
                     <span className="text-xs uppercase tracking-luxury text-muted-foreground mr-2">{t.admin.updateStatus}:</span>
                     {STATUSES.map(s => (
@@ -102,6 +121,12 @@ function AdminOrdersPage() {
                     ))}
                   </div>
                   {o.notes && <p className="mt-3 text-sm text-muted-foreground">{o.notes}</p>}
+                  <button
+                    onClick={() => generateReceiptPdf(o, items[o.id] ?? [], locale)}
+                    className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-luxury border border-border px-4 h-10 rounded-sm hover:border-gold hover:text-gold transition"
+                  >
+                    <Download className="w-3.5 h-3.5" /> {t.admin.downloadReceipt}
+                  </button>
                 </div>
               )}
             </div>

@@ -19,6 +19,12 @@ function CartPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [town, setTown] = useState("");
+  const [address, setAddress] = useState("");
+  const [notes, setNotes] = useState("");
+  const towns = ["Buea", "Limbe", "Mamfe", "Kumba", "Douala"];
   const { data: items = [] } = useQuery({
     queryKey: ["cart", user?.id],
     queryFn: () => fetchCart(user!.id),
@@ -45,11 +51,22 @@ function CartPage() {
 
   async function handleCheckout() {
     if (!user || items.length === 0) return;
+    if (!fullName.trim() || !phone.trim() || !town) {
+      alert(t.cart.deliveryRequired);
+      return;
+    }
     setPlacing(true);
     try {
+      const shippingAddress = {
+        full_name: fullName.trim(),
+        phone: phone.trim(),
+        town,
+        address: address.trim(),
+        notes: notes.trim(),
+      };
       const { data: order, error: orderErr } = await supabase
         .from("orders")
-        .insert({ user_id: user.id, status: "pending", total: subtotal, currency })
+        .insert({ user_id: user.id, status: "pending", total: subtotal, currency, shipping_address: shippingAddress })
         .select()
         .single();
       if (orderErr || !order) throw orderErr;
@@ -68,10 +85,11 @@ function CartPage() {
 
       const ref = order.id.slice(0, 8).toUpperCase();
       const waMsg = locale === "fr"
-        ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}`
-        : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}`;
+        ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nLivraison à: ${fullName} (${phone})\nVille: ${town}${address ? `\nAdresse: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}`
+        : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nDeliver to: ${fullName} (${phone})\nTown: ${town}${address ? `\nAddress: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}`;
 
       await clearCart(user.id);
+      setFullName(""); setPhone(""); setTown(""); setAddress(""); setNotes("");
       qc.invalidateQueries({ queryKey: ["cart"] });
       window.open(whatsappLink(waMsg), "_blank", "noopener,noreferrer");
       navigate({ to: "/dashboard" });
@@ -137,6 +155,34 @@ function CartPage() {
               <span className="font-mono font-medium">{formatPrice(subtotal, locale)}</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{t.cart.shipping}</p>
+
+            <div className="mt-6 pt-6 border-t border-border space-y-3">
+              <p className="text-xs uppercase tracking-luxury text-muted-foreground">{t.cart.deliveryDetails}</p>
+              <input
+                value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t.cart.fullName}
+                className="w-full h-11 px-3 bg-background border border-border rounded-sm text-sm outline-none focus:ring-2 focus:ring-gold"
+              />
+              <input
+                value={phone} onChange={e => setPhone(e.target.value)} placeholder={t.cart.phone}
+                className="w-full h-11 px-3 bg-background border border-border rounded-sm text-sm outline-none focus:ring-2 focus:ring-gold"
+              />
+              <select
+                value={town} onChange={e => setTown(e.target.value)}
+                className="w-full h-11 px-3 bg-background border border-border rounded-sm text-sm outline-none focus:ring-2 focus:ring-gold"
+              >
+                <option value="">{t.cart.selectTown}</option>
+                {towns.map(tw => <option key={tw} value={tw}>{tw}</option>)}
+              </select>
+              <input
+                value={address} onChange={e => setAddress(e.target.value)} placeholder={t.cart.address}
+                className="w-full h-11 px-3 bg-background border border-border rounded-sm text-sm outline-none focus:ring-2 focus:ring-gold"
+              />
+              <textarea
+                value={notes} onChange={e => setNotes(e.target.value)} placeholder={t.cart.deliveryNotes} rows={2}
+                className="w-full px-3 py-2 bg-background border border-border rounded-sm text-sm outline-none focus:ring-2 focus:ring-gold resize-none"
+              />
+            </div>
+
             <button
               onClick={handleCheckout} disabled={placing}
               className="mt-6 w-full h-14 bg-gradient-luxury text-gold-foreground rounded-sm text-xs uppercase tracking-luxury flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-60"
