@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { ChevronDown, ChevronUp, Download } from "lucide-react";
-import { generateReceiptPdf } from "@/lib/receipt";
 
 export const Route = createFileRoute("/admin/orders")({
   head: () => ({ meta: [{ title: "Orders — Admin — Clauvèra" }, { name: "robots", content: "noindex" }] }),
@@ -40,6 +39,11 @@ function AdminOrdersPage() {
   async function updateStatus(orderId: string, status: string) {
     await supabase.from("orders").update({ status }).eq("id", orderId);
     qc.invalidateQueries({ queryKey: ["adminOrders"] });
+  }
+
+  async function downloadReceipt(order: any) {
+    const { generateReceiptPdf } = await import("@/lib/receipt");
+    generateReceiptPdf(order, items[order.id] ?? [], locale);
   }
 
   const statusLabel = (s: string) => (t.admin as any)[`orderStatus_${s}`] ?? s;
@@ -122,7 +126,7 @@ function AdminOrdersPage() {
                   </div>
                   {o.notes && <p className="mt-3 text-sm text-muted-foreground">{o.notes}</p>}
                   <button
-                    onClick={() => generateReceiptPdf(o, items[o.id] ?? [], locale)}
+                    onClick={() => downloadReceipt(o)}
                     className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-luxury border border-border px-4 h-10 rounded-sm hover:border-gold hover:text-gold transition"
                   >
                     <Download className="w-3.5 h-3.5" /> {t.admin.downloadReceipt}

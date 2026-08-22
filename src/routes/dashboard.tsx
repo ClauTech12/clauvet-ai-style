@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAdminRole } from "@/hooks/use-admin-role";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { useTheme } from "@/theme/ThemeProvider";
-import { generateReceiptPdf } from "@/lib/receipt";
 import { LogOut, Download } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -49,6 +48,7 @@ function DashboardPage() {
     setDownloadingId(order.id);
     try {
       const { data: orderItems } = await supabase.from("order_items").select("*").eq("order_id", order.id);
+      const { generateReceiptPdf } = await import("@/lib/receipt");
       generateReceiptPdf(order, orderItems ?? [], locale);
     } finally {
       setDownloadingId(null);
