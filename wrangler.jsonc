@@ -4,4 +4,7 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
+  "vars": {
+    "SENTRY_DSN": "https://38403ed331dc735594cd0103495b4328@o4511955067797504.ingest.de.sentry.io/4511955079659600"
+  }
 }

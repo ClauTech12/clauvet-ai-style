@@ -1,7 +1,9 @@
 import "./lib/error-capture";
 
+import * as Sentry from "@sentry/cloudflare";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { captureServerException } from "./lib/sentry-server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -62,19 +64,30 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
     return response;
   }
 
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  const recoveredError = consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`);
+  console.error(recoveredError);
+  captureServerException(recoveredError);
   return brandedErrorResponse();
 }
 
-export default {
+const handler = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-      const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
+      const serverEntry = await getServerEntry();
+      const response = await serverEntry.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
       console.error(error);
+      captureServerException(error);
       return brandedErrorResponse();
     }
   },
 };
+
+export default Sentry.withSentry(
+  (env: Record<string, string | undefined>) => {
+    const dsn = env?.SENTRY_DSN;
+    return dsn ? { dsn, tracesSampleRate: 0.1 } : undefined;
+  },
+  handler,
+);
