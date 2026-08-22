@@ -39,11 +39,12 @@ function DashboardPage() {
     enabled: !!user,
   });
 
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
   if (!user) return null;
 
   const logout = async () => { await supabase.auth.signOut(); navigate({ to: "/" }); };
 
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   async function downloadReceipt(order: any) {
     setDownloadingId(order.id);
     try {
