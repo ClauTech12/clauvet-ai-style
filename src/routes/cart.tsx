@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { whatsappLink } from "@/lib/whatsapp";
 import { DELIVERY_ZONES, DELIVERY_TOWNS } from "@/lib/delivery";
+import { MOMO_NUMBER, ORANGE_MONEY_NUMBER } from "@/lib/payment";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Cart — Clauvèra" }], links: [{ rel: "canonical", href: "/cart" }] }),
@@ -84,9 +85,15 @@ function CartPage() {
       if (itemsErr) throw itemsErr;
 
       const ref = order.id.slice(0, 8).toUpperCase();
+      const paymentLineEn = ORANGE_MONEY_NUMBER
+        ? `Pay via MTN MoMo: ${MOMO_NUMBER} or Orange Money: ${ORANGE_MONEY_NUMBER}`
+        : `Pay via MTN MoMo: ${MOMO_NUMBER} (Orange Money number coming soon)`;
+      const paymentLineFr = ORANGE_MONEY_NUMBER
+        ? `Payer via MTN MoMo : ${MOMO_NUMBER} ou Orange Money : ${ORANGE_MONEY_NUMBER}`
+        : `Payer via MTN MoMo : ${MOMO_NUMBER} (numéro Orange Money bientôt disponible)`;
       const waMsg = locale === "fr"
-        ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nLivraison à: ${fullName} (${phone})\nVille: ${town}${address ? `\nAdresse: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n(Votre reçu a été téléchargé — gardez-le pour la livraison/le retrait.)`
-        : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nDeliver to: ${fullName} (${phone})\nTown: ${town}${address ? `\nAddress: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n(Your receipt has been downloaded — keep it for delivery/pickup.)`;
+        ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nLivraison à: ${fullName} (${phone})\nVille: ${town}${address ? `\nAdresse: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n${paymentLineFr}\n\n(Votre reçu a été téléchargé — gardez-le pour la livraison/le retrait.)`
+        : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nDeliver to: ${fullName} (${phone})\nTown: ${town}${address ? `\nAddress: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n${paymentLineEn}\n\n(Your receipt has been downloaded — keep it for delivery/pickup.)`;
 
       try {
         const { generateReceiptPdf } = await import("@/lib/receipt");
@@ -216,6 +223,12 @@ function CartPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-gold" /> {t.cart.cashOnDelivery}
               </span>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              MTN MoMo: <span className="font-mono text-foreground">{MOMO_NUMBER}</span>
+              {ORANGE_MONEY_NUMBER
+                ? <> · Orange Money: <span className="font-mono text-foreground">{ORANGE_MONEY_NUMBER}</span></>
+                : <> · Orange Money ({locale === "fr" ? "bientôt" : "coming soon"})</>}
+            </p>
           </aside>
         </div>
       )}
