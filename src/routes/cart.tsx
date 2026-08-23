@@ -85,8 +85,15 @@ function CartPage() {
 
       const ref = order.id.slice(0, 8).toUpperCase();
       const waMsg = locale === "fr"
-        ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nLivraison à: ${fullName} (${phone})\nVille: ${town}${address ? `\nAdresse: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}`
-        : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nDeliver to: ${fullName} (${phone})\nTown: ${town}${address ? `\nAddress: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}`;
+        ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nLivraison à: ${fullName} (${phone})\nVille: ${town}${address ? `\nAdresse: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n(Votre reçu a été téléchargé — gardez-le pour la livraison/le retrait.)`
+        : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nDeliver to: ${fullName} (${phone})\nTown: ${town}${address ? `\nAddress: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n(Your receipt has been downloaded — keep it for delivery/pickup.)`;
+
+      try {
+        const { generateReceiptPdf } = await import("@/lib/receipt");
+        await generateReceiptPdf(order as any, orderItems, locale);
+      } catch (receiptErr) {
+        console.error("Receipt auto-download failed:", receiptErr);
+      }
 
       await clearCart(user.id);
       setFullName(""); setPhone(""); setTown(""); setAddress(""); setNotes("");
