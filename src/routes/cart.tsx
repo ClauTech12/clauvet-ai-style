@@ -9,6 +9,7 @@ import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { whatsappLink } from "@/lib/whatsapp";
 import { DELIVERY_ZONES, DELIVERY_TOWNS } from "@/lib/delivery";
 import { MOMO_NUMBER, ORANGE_MONEY_NUMBER } from "@/lib/payment";
+import { initiateCampayPayment, checkCampayPaymentStatus } from "@/lib/campay-actions";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Cart — Clauvèra" }], links: [{ rel: "canonical", href: "/cart" }] }),
@@ -26,6 +27,8 @@ function CartPage() {
   const [town, setTown] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [campayState, setCampayState] = useState<"idle" | "waiting" | "success" | "failed" | "timeout">("idle");
+  const [campayInfo, setCampayInfo] = useState<{ ussd_code: string; operator: string } | null>(null);
   const { data: items = [] } = useQuery({
     queryKey: ["cart", user?.id],
     queryFn: () => fetchCart(user!.id),
@@ -50,7 +53,49 @@ function CartPage() {
 
   const currency = items[0]?.product?.currency ?? "XAF";
 
-  async function handleCheckout() {
+  async function createOrderRecord() {
+    const shippingAddress = {
+      full_name: fullName.trim(),
+      phone: phone.trim(),
+      town,
+      address: address.trim(),
+      notes: notes.trim(),
+    };
+    const { data: order, error: orderErr } = await supabase
+      .from("orders")
+      .insert({ user_id: user!.id, status: "pending", total: subtotal, currency, shipping_address: shippingAddress })
+      .select()
+      .single();
+    if (orderErr || !order) throw orderErr;
+
+    const orderItems = items.map(i => ({
+      order_id: order.id,
+      product_id: i.product.id,
+      product_name: locale === "fr" ? i.product.name_fr : i.product.name_en,
+      price: i.product.price,
+      quantity: i.quantity,
+      size: i.size,
+      color: i.color,
+    }));
+    const { error: itemsErr } = await supabase.from("order_items").insert(orderItems);
+    if (itemsErr) throw itemsErr;
+
+    return { order, orderItems };
+  }
+
+  async function finishUpAfterOrder(order: any, orderItems: any[], statusOverride?: string) {
+    try {
+      const { generateReceiptPdf } = await import("@/lib/receipt");
+      await generateReceiptPdf(statusOverride ? { ...order, status: statusOverride } : order, orderItems, locale);
+    } catch (receiptErr) {
+      console.error("Receipt auto-download failed:", receiptErr);
+    }
+    await clearCart(user!.id);
+    setFullName(""); setPhone(""); setTown(""); setAddress(""); setNotes("");
+    qc.invalidateQueries({ queryKey: ["cart"] });
+  }
+
+  async function handleCheckoutWhatsapp() {
     if (!user || items.length === 0) return;
     if (!fullName.trim() || !phone.trim() || !town) {
       alert(t.cart.deliveryRequired);
@@ -58,31 +103,7 @@ function CartPage() {
     }
     setPlacing(true);
     try {
-      const shippingAddress = {
-        full_name: fullName.trim(),
-        phone: phone.trim(),
-        town,
-        address: address.trim(),
-        notes: notes.trim(),
-      };
-      const { data: order, error: orderErr } = await supabase
-        .from("orders")
-        .insert({ user_id: user.id, status: "pending", total: subtotal, currency, shipping_address: shippingAddress })
-        .select()
-        .single();
-      if (orderErr || !order) throw orderErr;
-
-      const orderItems = items.map(i => ({
-        order_id: order.id,
-        product_id: i.product.id,
-        product_name: locale === "fr" ? i.product.name_fr : i.product.name_en,
-        price: i.product.price,
-        quantity: i.quantity,
-        size: i.size,
-        color: i.color,
-      }));
-      const { error: itemsErr } = await supabase.from("order_items").insert(orderItems);
-      if (itemsErr) throw itemsErr;
+      const { order, orderItems } = await createOrderRecord();
 
       const ref = order.id.slice(0, 8).toUpperCase();
       const paymentLineEn = ORANGE_MONEY_NUMBER
@@ -95,20 +116,57 @@ function CartPage() {
         ? `Bonjour Clauvèra, je souhaite finaliser ma commande #${ref} :\n${items.map(i => `• ${i.product.name_fr} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nLivraison à: ${fullName} (${phone})\nVille: ${town}${address ? `\nAdresse: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n${paymentLineFr}\n\n(Votre reçu a été téléchargé — gardez-le pour la livraison/le retrait.)`
         : `Hi Clauvèra, I'd like to place order #${ref}:\n${items.map(i => `• ${i.product.name_en} ×${i.quantity}`).join("\n")}\nTotal: ${formatPrice(subtotal, locale, currency)}\n\nDeliver to: ${fullName} (${phone})\nTown: ${town}${address ? `\nAddress: ${address}` : ""}${notes ? `\nNotes: ${notes}` : ""}\n\n${paymentLineEn}\n\n(Your receipt has been downloaded — keep it for delivery/pickup.)`;
 
-      try {
-        const { generateReceiptPdf } = await import("@/lib/receipt");
-        await generateReceiptPdf(order as any, orderItems, locale);
-      } catch (receiptErr) {
-        console.error("Receipt auto-download failed:", receiptErr);
-      }
-
-      await clearCart(user.id);
-      setFullName(""); setPhone(""); setTown(""); setAddress(""); setNotes("");
-      qc.invalidateQueries({ queryKey: ["cart"] });
+      await finishUpAfterOrder(order, orderItems);
       window.open(whatsappLink(waMsg), "_blank", "noopener,noreferrer");
       navigate({ to: "/dashboard" });
     } catch (e) {
       console.error("Checkout failed:", e);
+      alert(t.common.error);
+    } finally {
+      setPlacing(false);
+    }
+  }
+
+  async function pollCampayStatus(reference: string, order: any, orderItems: any[]) {
+    const maxAttempts = 30; // ~2 minutes at 4s intervals
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 4000));
+      try {
+        const status = await checkCampayPaymentStatus({ data: { reference } });
+        if (status.status === "SUCCESSFUL") {
+          setCampayState("success");
+          await finishUpAfterOrder(order, orderItems, "paid");
+          setTimeout(() => navigate({ to: "/dashboard" }), 2500);
+          return;
+        }
+        if (status.status === "FAILED") {
+          setCampayState("failed");
+          return;
+        }
+      } catch (e) {
+        console.error("CamPay status check failed:", e);
+      }
+    }
+    setCampayState("timeout");
+  }
+
+  async function handleCheckoutCampay() {
+    if (!user || items.length === 0) return;
+    if (!fullName.trim() || !phone.trim() || !town) {
+      alert(t.cart.deliveryRequired);
+      return;
+    }
+    setPlacing(true);
+    try {
+      const { order, orderItems } = await createOrderRecord();
+      const result = await initiateCampayPayment({
+        data: { orderId: order.id, amount: subtotal, phone: phone.trim() },
+      });
+      setCampayInfo({ ussd_code: result.ussd_code, operator: result.operator });
+      setCampayState("waiting");
+      pollCampayStatus(result.reference, order, orderItems);
+    } catch (e) {
+      console.error("CamPay checkout failed:", e);
       alert(t.common.error);
     } finally {
       setPlacing(false);
@@ -202,13 +260,57 @@ function CartPage() {
               />
             </div>
 
-            <button
-              onClick={handleCheckout} disabled={placing}
-              className="mt-6 w-full h-14 bg-gradient-luxury text-gold-foreground rounded-sm text-xs uppercase tracking-luxury flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-60"
-            >
-              {placing && <Loader2 className="w-4 h-4 animate-spin" />}
-              {t.cart.checkout}
-            </button>
+            {campayState === "idle" && (
+              <>
+                <button
+                  onClick={handleCheckoutCampay} disabled={placing}
+                  className="mt-6 w-full h-14 bg-gradient-luxury text-gold-foreground rounded-sm text-xs uppercase tracking-luxury flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-60"
+                >
+                  {placing && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {t.cart.payWithMomo}
+                </button>
+                <button
+                  onClick={handleCheckoutWhatsapp} disabled={placing}
+                  className="mt-3 w-full h-14 border border-border rounded-sm text-xs uppercase tracking-luxury flex items-center justify-center gap-2 hover:border-gold hover:text-gold transition disabled:opacity-60"
+                >
+                  {placing && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {t.cart.continueViaWhatsapp}
+                </button>
+              </>
+            )}
+
+            {campayState === "waiting" && (
+              <div className="mt-6 border border-gold rounded-sm p-5 text-center">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto text-gold" />
+                <p className="mt-3 text-sm font-medium">{t.cart.campayWaiting}</p>
+                {campayInfo && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {t.cart.campayDialCode}: <span className="font-mono text-foreground">{campayInfo.ussd_code}</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {campayState === "success" && (
+              <div className="mt-6 border border-gold rounded-sm p-5 text-center">
+                <p className="text-sm font-medium text-gold">{t.cart.campaySuccess}</p>
+              </div>
+            )}
+
+            {(campayState === "failed" || campayState === "timeout") && (
+              <div className="mt-6 border border-border rounded-sm p-5 text-center">
+                <p className="text-sm">
+                  {campayState === "failed" ? t.cart.campayFailed : t.cart.campayTimeout}
+                </p>
+                <button
+                  onClick={() => setCampayState("idle")}
+                  className="mt-3 text-xs uppercase tracking-luxury underline hover:text-gold transition"
+                >
+                  {t.cart.campayTryAgain}
+                </button>
+              </div>
+            )}
+
             <p className="mt-4 text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
               {t.cart.trustNote}
             </p>

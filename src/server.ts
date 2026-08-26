@@ -4,6 +4,8 @@ import * as Sentry from "@sentry/cloudflare";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { captureServerException } from "./lib/sentry-server";
+import { verifyCampayWebhookSignature } from "./lib/campay";
+import { supabaseAdmin } from "./integrations/supabase/client.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -70,9 +72,52 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+async function handleCampayWebhook(request: Request): Promise<Response> {
+  let payload: Record<string, unknown>;
+  try {
+    payload = await request.json();
+  } catch {
+    return new Response("Invalid JSON body", { status: 400 });
+  }
+
+  const signature = typeof payload.signature === "string" ? payload.signature : "";
+  try {
+    await verifyCampayWebhookSignature(signature);
+  } catch (error) {
+    console.error("CamPay webhook signature verification failed:", error);
+    captureServerException(error);
+    return new Response("Invalid signature", { status: 401 });
+  }
+
+  const status = payload.status;
+  const externalReference = typeof payload.external_reference === "string" ? payload.external_reference : "";
+  const reference = typeof payload.reference === "string" ? payload.reference : "";
+
+  if (status === "SUCCESSFUL" && externalReference) {
+    const { error } = await supabaseAdmin
+      .from("orders")
+      .update({ status: "paid" })
+      .eq("id", externalReference)
+      .eq("campay_reference", reference);
+    if (error) {
+      console.error("CamPay webhook: failed to mark order paid:", error);
+      captureServerException(error);
+    }
+  }
+
+  // CamPay expects a 200 regardless of outcome once the signature is valid —
+  // returning an error here would just make it retry the same webhook.
+  return new Response("OK", { status: 200 });
+}
+
 const handler = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+      if (url.pathname === "/api/webhooks/campay" && request.method === "POST") {
+        return await handleCampayWebhook(request);
+      }
+
       const serverEntry = await getServerEntry();
       const response = await serverEntry.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

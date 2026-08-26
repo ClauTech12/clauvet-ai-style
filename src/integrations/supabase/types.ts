@@ -132,10 +132,12 @@ export type Database = {
       }
       orders: {
         Row: {
+          campay_reference: string | null
           created_at: string
           currency: string
           id: string
           notes: string | null
+          payment_method: string
           shipping_address: Json
           status: string
           total: number
@@ -143,10 +145,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          campay_reference?: string | null
           created_at?: string
           currency?: string
           id?: string
           notes?: string | null
+          payment_method?: string
           shipping_address?: Json
           status?: string
           total: number
@@ -154,10 +158,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          campay_reference?: string | null
           created_at?: string
           currency?: string
           id?: string
           notes?: string | null
+          payment_method?: string
           shipping_address?: Json
           status?: string
           total?: number
