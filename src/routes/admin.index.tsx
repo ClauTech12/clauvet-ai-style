@@ -7,6 +7,7 @@ import { RevenueTrendChart } from "@/components/admin/RevenueTrendChart";
 import { CategoryRevenueChart } from "@/components/admin/CategoryRevenueChart";
 import { OrderStatusChart } from "@/components/admin/OrderStatusChart";
 import { OrdersHeatmap } from "@/components/admin/OrdersHeatmap";
+import { OrdersByTownChart } from "@/components/admin/OrdersByTownChart";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Admin — Clauvèra" }, { name: "robots", content: "noindex" }] }),
@@ -92,6 +93,10 @@ function AdminOverview() {
         <CategoryRevenueChart locale={locale} />
         <OrderStatusChart statusLabel={statusLabel} />
         <OrdersHeatmap />
+      </section>
+
+      <section className="mt-6">
+        <OrdersByTownChart locale={locale} />
       </section>
 
       <section className="mt-16">
