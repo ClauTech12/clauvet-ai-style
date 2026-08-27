@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
-import { ChevronDown, ChevronUp, Download } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/orders")({
   head: () => ({ meta: [{ title: "Orders — Admin — Clauvèra" }, { name: "robots", content: "noindex" }] }),
@@ -39,6 +39,18 @@ function AdminOrdersPage() {
 
   async function updateStatus(orderId: string, status: string) {
     await supabase.from("orders").update({ status }).eq("id", orderId);
+    qc.invalidateQueries({ queryKey: ["adminOrders"] });
+  }
+
+  async function deleteOrder(orderId: string, ref: string) {
+    if (!window.confirm(`${t.admin.confirmDeleteOrder} #${ref}?`)) return;
+    const { error } = await supabase.from("orders").delete().eq("id", orderId);
+    if (error) {
+      console.error("Failed to delete order:", error);
+      alert(t.common.error);
+      return;
+    }
+    if (expanded === orderId) setExpanded(null);
     qc.invalidateQueries({ queryKey: ["adminOrders"] });
   }
 
@@ -126,12 +138,20 @@ function AdminOrdersPage() {
                     ))}
                   </div>
                   {o.notes && <p className="mt-3 text-sm text-muted-foreground">{o.notes}</p>}
-                  <button
-                    onClick={() => downloadReceipt(o)}
-                    className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-luxury border border-border px-4 h-10 rounded-sm hover:border-gold hover:text-gold transition"
-                  >
-                    <Download className="w-3.5 h-3.5" /> {t.admin.downloadReceipt}
-                  </button>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => downloadReceipt(o)}
+                      className="inline-flex items-center gap-2 text-xs uppercase tracking-luxury border border-border px-4 h-10 rounded-sm hover:border-gold hover:text-gold transition"
+                    >
+                      <Download className="w-3.5 h-3.5" /> {t.admin.downloadReceipt}
+                    </button>
+                    <button
+                      onClick={() => deleteOrder(o.id, o.id.slice(0, 8).toUpperCase())}
+                      className="inline-flex items-center gap-2 text-xs uppercase tracking-luxury border border-border px-4 h-10 rounded-sm hover:border-destructive hover:text-destructive transition"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> {t.admin.deleteOrder}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
