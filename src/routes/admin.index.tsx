@@ -3,6 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { Package, ShoppingBag, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { RevenueTrendChart } from "@/components/admin/RevenueTrendChart";
+import { CategoryRevenueChart } from "@/components/admin/CategoryRevenueChart";
+import { OrderStatusChart } from "@/components/admin/OrderStatusChart";
+import { OrdersHeatmap } from "@/components/admin/OrdersHeatmap";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Admin — Clauvèra" }, { name: "robots", content: "noindex" }] }),
@@ -82,6 +86,13 @@ function AdminOverview() {
           </div>
         </section>
       )}
+
+      <section className="mt-10 grid md:grid-cols-2 gap-6">
+        <RevenueTrendChart locale={locale} />
+        <CategoryRevenueChart locale={locale} />
+        <OrderStatusChart statusLabel={statusLabel} />
+        <OrdersHeatmap />
+      </section>
 
       <section className="mt-16">
         <h2 className="font-display text-2xl mb-4">{t.admin.orders}</h2>
