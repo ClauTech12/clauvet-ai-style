@@ -6,6 +6,7 @@ import { renderErrorPage } from "./lib/error-page";
 import { captureServerException } from "./lib/sentry-server";
 import { verifyCampayWebhookSignature } from "./lib/campay";
 import { supabaseAdmin } from "./integrations/supabase/client.server";
+import { applySecurityHeaders } from "./lib/security-headers";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -115,16 +116,16 @@ const handler = {
     try {
       const url = new URL(request.url);
       if (url.pathname === "/api/webhooks/campay" && request.method === "POST") {
-        return await handleCampayWebhook(request);
+        return applySecurityHeaders(await handleCampayWebhook(request), request);
       }
 
       const serverEntry = await getServerEntry();
       const response = await serverEntry.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return applySecurityHeaders(await normalizeCatastrophicSsrResponse(response), request);
     } catch (error) {
       console.error(error);
       captureServerException(error);
-      return brandedErrorResponse();
+      return applySecurityHeaders(brandedErrorResponse(), request);
     }
   },
 };
