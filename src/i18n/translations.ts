@@ -235,6 +235,12 @@ export const translations = {
         q4: "How do I pay?",
         a4: "You confirm your order and payment directly with us on WhatsApp — Mobile Money or cash on delivery. A real person replies, every time.",
       },
+      about: {
+        eyebrow: "Clauvèra",
+        title: "A house elevated, rooted in Cameroon.",
+        p1: "Clauvèra was born in Buea, 870m above sea level, on a simple idea: luxury doesn't have to come from elsewhere to matter here.",
+        p2: "Every piece is hand-selected by our team, and every order is confirmed directly with you — over WhatsApp, by a real person, every time.",
+      },
     },
     common: {
       loading: "Loading...",
@@ -476,6 +482,12 @@ export const translations = {
         q4: "Comment puis-je payer ?",
         a4: "Vous confirmez votre commande et votre paiement directement avec nous sur WhatsApp — Mobile Money ou paiement à la livraison. Une vraie personne vous répond, à chaque fois.",
       },
+      about: {
+        eyebrow: "Clauvèra",
+        title: "Une maison élevée, enracinée au Cameroun.",
+        p1: "Clauvèra est née à Buea, 870m au-dessus du niveau de la mer, avec une idée simple : le luxe ne doit pas venir d'ailleurs pour compter ici.",
+        p2: "Chaque pièce est sélectionnée par notre équipe, et chaque commande est confirmée directement avec vous — sur WhatsApp, par une vraie personne, à chaque fois.",
+      },
     },
     common: {
       loading: "Chargement...",
@@ -716,6 +728,12 @@ export const translations = {
         a3: "If item reach you spoil or na wrong item, message us for WhatsApp within 48 hours make we replace am free or refund you. Outside dat, every sale don finish be dat.",
         q4: "How I go pay?",
         a4: "You go confirm your order and payment straight with us for WhatsApp — Mobile Money or pay when e reach you. Na real person go answer you, every time.",
+      },
+      about: {
+        eyebrow: "Clauvèra",
+        title: "One house wey dey elevate, wey get Cameroon root.",
+        p1: "Clauvèra born for Buea, 870m for up above sea level, from one simple idea: luxury no need come from anywhere else make e matter here.",
+        p2: "Our team dey pick every piece with hand, and every order we go confirm am straight with you — for WhatsApp, na real person, every time.",
       },
     },
     common: {
