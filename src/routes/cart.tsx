@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n, formatPrice } from "@/i18n/I18nProvider";
 import { whatsappLink } from "@/lib/whatsapp";
-import { DELIVERY_ZONES, DELIVERY_TOWNS } from "@/lib/delivery";
+import { DELIVERY_ZONES, DELIVERY_TOWNS, formatDeliveryTime } from "@/lib/delivery";
 import { MOMO_NUMBER, ORANGE_MONEY_NUMBER } from "@/lib/payment";
 import { initiateCampayPayment, checkCampayPaymentStatus } from "@/lib/campay-actions";
 
@@ -247,7 +247,7 @@ function CartPage() {
               </select>
               {town && (
                 <p className="text-xs text-gold">
-                  {DELIVERY_ZONES.find(z => z.place === town)?.time}
+                  {formatDeliveryTime(DELIVERY_ZONES.find(z => z.place === town)?.hours, locale)}
                 </p>
               )}
               <input
