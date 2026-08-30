@@ -31,6 +31,7 @@ export function applySecurityHeaders(response: Response, request: Request): Resp
   headers.set("X-Frame-Options", "DENY");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  headers.set("Cross-Origin-Resource-Policy", "same-origin");
   headers.set("Content-Security-Policy", CSP_DIRECTIVES);
 
   // Only set HSTS over an actual HTTPS connection — setting it on plain
