@@ -4,3 +4,5 @@ Allow: /
 Disallow: /admin
 Disallow: /dashboard
 Disallow: /cart
+
+Sitemap: https://tanstack-start-app.clauvera.workers.dev/sitemap.xml

@@ -6,6 +6,7 @@ import { renderErrorPage } from "./lib/error-page";
 import { captureServerException } from "./lib/sentry-server";
 import { verifyCampayWebhookSignature } from "./lib/campay";
 import { supabaseAdmin } from "./integrations/supabase/client.server";
+import { supabase } from "./integrations/supabase/client";
 import { applySecurityHeaders } from "./lib/security-headers";
 
 type ServerEntry = {
@@ -111,12 +112,53 @@ async function handleCampayWebhook(request: Request): Promise<Response> {
   return new Response("OK", { status: 200 });
 }
 
+const STATIC_SITEMAP_PATHS = [
+  "/", "/shop", "/about", "/faq", "/terms", "/privacy", "/returns", "/shipping", "/contact",
+];
+
+function xmlEscape(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+async function handleSitemap(request: Request): Promise<Response> {
+  const origin = new URL(request.url).origin;
+  const urls: { loc: string; lastmod?: string }[] = STATIC_SITEMAP_PATHS.map((p) => ({ loc: `${origin}${p}` }));
+
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("slug, updated_at");
+  if (error) {
+    console.error("Sitemap: failed to fetch products:", error);
+    captureServerException(error);
+  } else {
+    for (const p of products ?? []) {
+      urls.push({ loc: `${origin}/product/${p.slug}`, lastmod: String(p.updated_at).slice(0, 10) });
+    }
+  }
+
+  const body =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls
+      .map(
+        (u) =>
+          `  <url><loc>${xmlEscape(u.loc)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ""}</url>`,
+      )
+      .join("\n") +
+    `\n</urlset>\n`;
+
+  return new Response(body, { status: 200, headers: { "content-type": "application/xml; charset=utf-8" } });
+}
+
 const handler = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const url = new URL(request.url);
       if (url.pathname === "/api/webhooks/campay" && request.method === "POST") {
         return applySecurityHeaders(await handleCampayWebhook(request), request);
+      }
+      if (url.pathname === "/sitemap.xml" && request.method === "GET") {
+        return applySecurityHeaders(await handleSitemap(request), request);
       }
 
       const serverEntry = await getServerEntry();
